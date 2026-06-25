@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Smart Electronics Lab v1.3 Product Design</title>
+<title>Smart Electronics Lab v1.4 Product Design</title>
 <style>
   @page { size: Letter; margin: 0.85in; }
   body {
@@ -100,34 +100,33 @@
 <body>
 
 <div class="titlepage">
-  <h1>Smart Electronics Lab v1.3</h1>
-  <div class="subtitle">A three-kit product ladder: guided electronics lab, internet radio, and SDR workstation</div>
-  <div class="meta">Prepared for Bob Litt<br>Revised June 2026 &mdash; Product-Ladder Restructure</div>
-  <div class="version-tag">v1.3 &middot; supersedes v1.2</div>
+  <h1>Smart Electronics Lab v1.4</h1>
+  <div class="subtitle">A three-kit product ladder with a no-code default path: guided electronics lab, internet radio, and SDR workstation</div>
+  <div class="meta">Prepared for Bob Litt<br>Revised June 2026 &mdash; No-Code User Paths &amp; Firmware Delivery Architecture</div>
+  <div class="version-tag">v1.4 &middot; supersedes v1.3</div>
 </div>
 
 <div class="pagebreak"></div>
 
-<h2>0. What changed in v1.3</h2>
-<p>v1.3 restructures the product from a three-<i>stage</i> roadmap into a three-<i>kit</i> product ladder, per a new brief. The biggest change: Kit 1 no longer assumes the Elecrow has a usable audio path. Internet radio becomes Kit 1's capstone, played through a second, dedicated ESP32 audio module &mdash; and SDR/waterfall work moves entirely out of Kit 1 into Kit 2 and Kit 3. This is a restructuring, not a reversal: nearly every v1.2 technical decision (3.3V default, INA219 topology, lesson schema, fault-drill design, safety scope) carries forward unchanged inside the new kit boundaries.</p>
+<h2>0. What changed in v1.4</h2>
+<p>v1.4 adds a no-code product architecture on top of v1.3's three-kit ladder. The design problem: none of the three kits should require the ordinary learner to write or compile code to reach their main milestones. Coding remains possible and teachable, but it moves to an explicit, optional Developer Mode path (&sect;20) rather than being the default way to get a kit working. v1.4 changes nothing about the kit ladder, BOM, hardware design, or lesson content decided in v1.3 &mdash; it adds the user-facing and firmware-delivery layer that sits on top of all three kits.</p>
 <table>
 <tr><th>Change</th><th>What happened</th></tr>
-<tr><td>Roadmap shape</td><td>Three stages &rarr; three kits (Kit 1 Part 1, Kit 1 Part 2, Kit 2, Kit 3). Kit boundaries are purchase/assembly boundaries, not just curriculum boundaries.</td></tr>
-<tr><td>Elecrow audio</td><td>No longer assumed. The v1.2 &sect;4.1 "audio decision branch" is now resolved: Kit 1's internet radio always uses a second ESP32 audio module, regardless of what the Elecrow turns out to support. Confirming Elecrow I2S becomes a low-stakes curiosity, not a Kit 1 dependency.</td></tr>
-<tr><td>Internet radio</td><td>Promoted from a Stage 2b appliance feature to the explicit emotional capstone of Kit 1 &mdash; the first time the learner hears sound from something they assembled.</td></tr>
-<tr><td>Wi-Fi / JSON-API teaching</td><td>v1.1/v1.2's "Stage 2a" (Wi-Fi association, fetching a JSON API) had no separate home in the new ladder. It is folded into Kit 1 Part 2's lesson sequence (L12&ndash;L13), since connecting to Wi-Fi and fetching a station list is exactly what the radio capstone already requires &mdash; no separate stage needed for it.</td></tr>
-<tr><td>SDR / waterfall</td><td>Moved out of Kit 1 entirely. Kit 2 is an add-on (RTL-SDR + Pi/mini PC + user's own monitor); Kit 3 is Kit 2 plus an included 15&Prime; display.</td></tr>
-<tr><td>Audio subsystem choice</td><td>Researched and decided: ESP32-S3 dev board + MAX98357A I2S breakout + small speaker, on the breadboard, programmed with the Arduino framework. See &sect;6.</td></tr>
-<tr><td>Kit 2/3 compute &amp; receiver</td><td>Researched: RTL-SDR Blog V4 recommended as the receiver; SDR++ recommended as the first-success waterfall stack. Pi 5 vs. mini PC stays an open call &mdash; 2026 DRAM-driven pricing brought them close enough that it's a real trade-off, not a default. See &sect;13.</td></tr>
-<tr><td>Kit 3 display</td><td>Researched: the official Raspberry Pi Monitor (15.6&Prime;, HDMI in, USB-powered) is the default recommendation if Kit 2 compute is a Pi; a budget USB-C/HDMI portable monitor (e.g. Arzopa-class) is the fallback if compute is a mini PC. Touch not required for v1. See &sect;14.</td></tr>
-<tr><td>Command protocol</td><td>Generalized beyond knob/touch/button events to also carry audio commands (<code>play_station</code>, <code>set_volume</code>) and SDR commands (<code>set_frequency</code>), plus <code>status_request</code>. See &sect;6 and &sect;13.</td></tr>
-<tr><td>BOM</td><td>Restructured by kit and timing instead of by stage: Kit 1&ndash;Now, Kit 1&ndash;Later (Radio), Kit 2, Kit 3. See &sect;15.</td></tr>
-<tr><td>MVP statement</td><td>Made explicit and prominent (&sect;2): the MVP is one guided LED/resistor lesson with correct INA219 feedback &mdash; not SDR, not a 15&Prime; screen, not a proprietary breadboard.</td></tr>
-<tr><td>Product tiers <span class="new-tag">NEW</span></td><td>Kit 1 Part 1/Part 2 (build-sequence names) now also carry customer-facing tier names: <b>Kit 1 Standard</b> (Part 1 only) and <b>Kit 1 Deluxe</b> (Part 1 + Part 2). The second ESP32 audio module is reframed as a deliberate product-tier and curriculum feature, not only a workaround for the Elecrow's uncertain audio path. See &sect;3, &sect;6.</td></tr>
-<tr><td>Future hardware path <span class="new-tag">NEW</span></td><td>Added &sect;19, "Future hardware convergence (v2)": a custom dial/display module that would later integrate the Elecrow's and the second ESP32 audio module's functions into one device. Explicitly deferred until after the MVP is proven; does not delay or change the v1.3 plan.</td></tr>
-<tr><td>BOM completeness <span class="new-tag">NEW</span></td><td>Restored a small "Kit 1 &mdash; Buy Later, General" table (capacitor kit, electrolytic capacitors, buzzer module) so L11's buzzer reference has a matching BOM line. These were "buy soon" items in v1.2 that fell out when trimming &sect;15 to the brief's Buy-Now list, with no replacement row anywhere &mdash; an oversight, not an intentional cut.</td></tr>
+<tr><td>Hard product rule</td><td>A learner must be able to complete Kit 1, Kit 2, and Kit 3's main milestones without writing code. See &sect;20.</td></tr>
+<tr><td>Three user paths</td><td>Use Mode (default, no-code, prebuilt firmware), Configure Mode (no-code, editable settings), and Developer Mode (PlatformIO/Arduino, optional, never required for a kit milestone). See &sect;20.</td></tr>
+<tr><td>Firmware delivery architecture</td><td>Three firmware images defined: Elecrow Tutor Firmware, ESP32 Audio Firmware, and a later SDR Bridge mode of the same Elecrow firmware &mdash; each with explicit responsibilities and a JSON command/status protocol. See &sect;21.</td></tr>
+<tr><td>Browser-based flashing</td><td>A web installer (ESP Web Tools / ESP Launchpad class tool) is now the default Use Mode flashing path; Arduino IDE/PlatformIO are not required for normal use. Flagged that this needs a desktop browser with Web Serial &mdash; not assumed to work on iPhone/iPad. See &sect;22.</td></tr>
+<tr><td>Repository structure</td><td>Proposed a concrete GitHub repo layout (firmware/, shared-protocol/, lesson-packs/, installers/, docs/, hardware/) and a release-artifact checklist. See &sect;23.</td></tr>
+<tr><td>First-time user flow</td><td>Spelled out as product behavior, not implementation: Kit 1 Part 1 first boot, Kit 1 Part 2 radio capstone, and Kit 2/3 first boot. See &sect;24.</td></tr>
+<tr><td>Configuration schema</td><td>Added a minimal Kit 1 config schema (Wi-Fi, stations, lesson pack, calibration, safety) covering everything Configure Mode needs to expose without coding. See &sect;25.</td></tr>
+<tr><td>Lesson schema extension</td><td>Extended &sect;7's lesson schema with firmware/hardware requirement fields, needed for a no-code lesson engine to self-describe its own requirements before a lesson starts. See &sect;26.</td></tr>
+<tr><td>Product branch vs. developer branch</td><td>Formalized as a hard rule: every required kit milestone must be achievable on the Product branch (prebuilt firmware) alone. See &sect;27.</td></tr>
+<tr><td>Build plan for Claude/Codex</td><td>Added a concrete build-priority order and three explicit MVPs (LED/resistor lesson, radio playback, SDR knob control), restated for the implementers rather than the buyer. See &sect;28.</td></tr>
+<tr><td>Support, recovery, flash behavior</td><td>Added recovery/self-test requirements and restated v1.2/v1.3's flash-write and storage decisions (&sect;7) under the no-code framing. See &sect;29.</td></tr>
+<tr><td>Kit 2/3 image strategy</td><td>Extended &sect;13 with a no-code requirement: Kit 2/3 users get a prepared Pi/mini PC image or packaged installer, not a compile-from-source path. See &sect;30.</td></tr>
+<tr><td>Product identity statement</td><td>Added a one-paragraph product identity statement: this is a guided electronics learning system with an optional developer track, not a coding kit. See &sect;31.</td></tr>
 </table>
-<p>No item in the new brief contradicted a v1.2 decision badly enough to flag as a blocking problem; the audio-branch resolution, the Stage-2a fold-in, and the BOM-completeness fix above are the three places this revision made a judgment call rather than just transcribing the brief, and all three are called out so they can be challenged if wrong.</p>
+<p>Nothing in this brief contradicted a v1.3 decision; it adds a layer above the existing kit/hardware/lesson design rather than changing it. The one judgment call worth flagging: Firmware Image 3 (SDR Bridge, &sect;21) is documented as additional modes of the existing Elecrow tutor firmware rather than a fourth separate codebase, since Kit 2/3 already reuse the same physical Elecrow unit carried over from Kit 1 (&sect;13).</p>
 
 <h2>1. Decision log <span class="rev-tag">UPDATED</span></h2>
 <div class="decisioncols">
@@ -147,6 +146,14 @@
   <li>3.3V default rail, INA219 topology, extended lesson schema, structural power-off-before-rewiring, and the controlled fault-screen drill all carry forward from v1.2 unchanged.</li>
   <li>Kit 1 ships in two customer-facing tiers: <b>Kit 1 Standard</b> (Part 1 only) and <b>Kit 1 Deluxe</b> (Part 1 + Part 2, adding the second ESP32 audio module, I2S DAC/amp, speaker, and the internet-radio lesson pack). The tier split is a deliberate product and curriculum decision, not only a workaround for the Elecrow's unconfirmed audio path.</li>
   <li>A future v2 custom dial/display module is documented as a direction (&sect;19), converging the Elecrow's and the second ESP32 audio module's functions into one device &mdash; explicitly deferred until after the MVP is proven, and explicitly not a blocker or delay for the v1.3 plan.</li>
+  <li>Default user path is no-code (&sect;20); coding is an optional Developer Mode branch, not a prerequisite, for any of the three kits.</li>
+  <li>Firmware is prebuilt for Use Mode; browser-based flashing (ESP Web Tools/ESP Launchpad class tool) is the preferred installer, not Arduino IDE/PlatformIO (&sect;22).</li>
+  <li>Configure Mode is allowed and documented (&sect;20, &sect;25), but it is configuration, not coding.</li>
+  <li>Developer Mode exists and is documented (&sect;20, &sect;23), but is optional for every kit milestone.</li>
+  <li>Kit 1 Part 2 must produce the sound moment without requiring code editing (&sect;20, &sect;24).</li>
+  <li>Kit 2/Kit 3 use a prepared SDR software path &mdash; an image or installer &mdash; not a compile-from-source path (&sect;30).</li>
+  <li>Claude/Codex build the first firmware; users install it through the Product branch (&sect;27, &sect;28).</li>
+  <li>Firmware Image 3 (SDR Bridge) is additional modes of the existing Elecrow tutor firmware, not a separate codebase (&sect;21).</li>
 </ul>
 </div>
 <div class="callout blue">
@@ -160,6 +167,12 @@
   <li>Kit 3 touch vs. non-touch 15&Prime; display &mdash; default assumption is non-touch, since the Elecrow already provides physical control (&sect;14).</li>
   <li>Elecrow expansion connector type and exact pinout (carried from v1.2, still unconfirmed).</li>
   <li>Elecrow I2S/audio feasibility &mdash; now a low-stakes curiosity rather than a Kit 1 blocker, but still worth checking once for future flexibility.</li>
+  <li>ESP Web Tools vs. ESP Launchpad as the primary installer (&sect;22).</li>
+  <li>Exact firmware packaging/release format (&sect;23).</li>
+  <li>Exact station-configuration interface &mdash; on-device menu vs. local web UI vs. config file (&sect;20, &sect;25).</li>
+  <li>Whether the Kit 2/3 Pi image is custom-built or assembled via install scripts on stock Raspberry Pi OS (&sect;30).</li>
+  <li>How much lesson content lives in firmware vs. filesystem for v1 (&sect;7, &sect;29).</li>
+  <li>Whether a local web UI is needed in v1 or can wait until v2 (&sect;20).</li>
 </ul>
 </div>
 </div>
@@ -662,7 +675,311 @@ next: L3_change_the_resistor</div>
 
 <p>This is a hardware roadmap entry, not a current build task: no part numbers, no BOM line, and it should not be started before Kit 1 Standard and Kit 1 Deluxe both work reliably with off-the-shelf parts.</p>
 
-<div class="footer">Smart Electronics Lab v1.3 &mdash; revised June 2026</div>
+<div class="pagebreak"></div>
+
+<h2>20. User paths: Use Mode, Configure Mode, Developer Mode <span class="new-tag">NEW</span></h2>
+<p>The design problem this section answers: the product cannot require the ordinary learner to write code to complete Kit 1 Part 2, Kit 2, or Kit 3. Coding should remain possible, and eventually teachable, but it must not be the default completion path. Without this distinction, the project is an open-source build; with it, the project is a guided learning product.</p>
+
+<div class="callout red">
+<b class="label">Hard requirement:</b> a learner must be able to complete the main milestones of Kit 1, Kit 2, and Kit 3 without writing code. The product may teach what the code is doing, and may offer a later "learn to modify the firmware" branch, but the default user should never need to open PlatformIO, edit C++, debug libraries, or compile firmware manually to reach a kit's milestone.
+</div>
+
+<h3>Path A: Use Mode &mdash; default, no coding</h3>
+<p>The user installs prebuilt firmware through a browser-based installer (&sect;22) and follows guided instructions. No step in either flow below requires writing or compiling code.</p>
+<p><b>Kit 1:</b></p>
+<ol>
+  <li>Plug the Elecrow rotary display into a computer using USB-C.</li>
+  <li>Open the Smart Lab web installer.</li>
+  <li>Click "Install Tutor Firmware."</li>
+  <li>Plug in the second ESP32 audio board (Kit 1 Deluxe only).</li>
+  <li>Click "Install Radio Audio Firmware."</li>
+  <li>Follow the Elecrow screen to configure Wi-Fi, test hardware, build lessons, and play internet-radio audio.</li>
+</ol>
+<p><b>Kit 2 / Kit 3:</b></p>
+<ol>
+  <li>Flash or boot a prepared Raspberry Pi / mini PC image, or run a packaged installer.</li>
+  <li>Plug in the RTL-SDR receiver.</li>
+  <li>Open the preconfigured SDR application.</li>
+  <li>Confirm the waterfall display.</li>
+  <li>Connect the Elecrow control head.</li>
+  <li>Turn the Elecrow knob and confirm a real SDR parameter changes &mdash; frequency, zoom, gain, or preset.</li>
+</ol>
+
+<h3>Path B: Configure Mode &mdash; no coding, editable settings</h3>
+<p>Configure Mode lets the user customize the product without programming it. Configurable items include Wi-Fi credentials, the station list, volume defaults, lesson-pack selection, device name, measurement calibration values, SDR presets, local weather/location settings, the ham repeater database source, and display preferences.</p>
+<p>Configuration runs through one or more of: on-device menus, a local web interface served by the device, a JSON/YAML config file (&sect;25), a browser-based setup page, or serial console commands as a fallback only.</p>
+
+<h3>Path C: Developer Mode &mdash; coding allowed</h3>
+<p>Developer Mode is for Bob, Claude, Codex, maintainers, and open-source contributors. It uses PlatformIO, the Arduino framework for ESP32 first, the GitHub repository, serial logs, the unit-testable lesson schema files, firmware builds, and release binaries &mdash; with ESP-IDF only if later needed. Developer Mode is documented (&sect;21, &sect;23), but it is never required to complete a user-facing kit milestone.</p>
+
+<h2>21. Firmware delivery architecture <span class="new-tag">NEW</span></h2>
+<p>The product ships prebuilt firmware images so Use Mode (&sect;20) never requires a build step.</p>
+
+<h3>Firmware Image 1: Elecrow Tutor Firmware</h3>
+<ul>
+  <li>Display lesson steps, diagrams, and simple UI.</li>
+  <li>Read knob rotation, knob press, and touch input.</li>
+  <li>Read the INA219 over I2C and compare measured voltage/current against lesson expectations.</li>
+  <li>Display pass / fail / warning states.</li>
+  <li>Manage lesson progress.</li>
+  <li>Send command messages to the ESP32 audio board (&sect;6) and, later, to the Raspberry Pi/SDR workstation (&sect;13).</li>
+  <li>Support Wi-Fi setup, configuration import/export, and version reporting.</li>
+</ul>
+
+<h3>Firmware Image 2: ESP32 Audio Firmware</h3>
+<ul>
+  <li>Connect to Wi-Fi.</li>
+  <li>Store or receive station URLs.</li>
+  <li>Receive commands from the Elecrow.</li>
+  <li>Stream internet radio and decode supported audio formats.</li>
+  <li>Output audio over I2S, driving the MAX98357A or equivalent I2S amplifier (&sect;6).</li>
+  <li>Report status back to the Elecrow, including human-readable errors.</li>
+</ul>
+<p>Expected commands and status replies, extending the protocol already introduced in &sect;6:</p>
+<div class="schema-block">{"command":"play_station","id":"station_001"}
+{"command":"stop"}
+{"command":"set_volume","value":42}
+{"command":"next_station"}
+{"command":"previous_station"}
+{"status_request":"audio"}</div>
+<div class="schema-block">{"status":"playing","station":"station_001","buffer_percent":73}
+{"status":"stopped"}
+{"status":"error","code":"wifi_failed","message":"Wi-Fi connection failed"}
+{"status":"error","code":"stream_failed","message":"Could not open stream"}</div>
+
+<h3>Firmware Image 3: SDR Bridge / Control Head Firmware <span class="rev-tag">LATER</span></h3>
+<p>This is additional modes enabled in the same Elecrow tutor firmware (Image 1), not a separate codebase &mdash; Kit 2/3 reuse the same physical Elecrow unit purchased with Kit 1 (&sect;13).</p>
+<ul>
+  <li>Send knob/touch/button events to the Raspberry Pi or mini PC.</li>
+  <li>Receive screen-state information from the SDR workstation if needed.</li>
+  <li>Display compact SDR status on the Elecrow.</li>
+  <li>Select presets; change frequency, waterfall zoom, and gain; toggle modes.</li>
+</ul>
+<div class="schema-block">{"event":"knob","delta":1}
+{"event":"button","name":"select","state":"pressed"}
+{"event":"touch","x":214,"y":93}
+{"command":"set_frequency","hz":145500000}
+{"command":"set_gain","db":22}
+{"command":"set_waterfall_zoom","delta":1}
+{"status_request":"sdr"}</div>
+
+<h2>22. Browser-based flashing <span class="new-tag">NEW</span></h2>
+<p>The preferred no-code flashing path is a web installer &mdash; a tool in the ESP Web Tools / ESP Launchpad class. Arduino IDE and PlatformIO are not required for Use Mode.</p>
+<p>Implementation requirements:</p>
+<ul>
+  <li>Host the firmware binaries and a manifest/configuration file.</li>
+  <li>One install button per supported board.</li>
+  <li>Clear board-compatibility display.</li>
+  <li>A "known good firmware" fallback build.</li>
+  <li>Version numbers and release notes on every build.</li>
+  <li>A documented recovery procedure.</li>
+  <li>A serial log viewer or simple diagnostic mode, if the chosen web flasher supports it.</li>
+</ul>
+<div class="callout blue">
+<b class="label">Platform caveat:</b> browser-based ESP flashing requires a desktop browser with Web Serial support. iPhone/iPad should not be assumed to work for flashing. Mobile devices are fine for reading instructions, but are not the primary firmware installer.
+</div>
+
+<h2>23. Repository and release structure <span class="new-tag">NEW</span></h2>
+<p>Proposed GitHub layout, separating firmware, protocol, lesson content, installers, docs, and hardware so Developer Mode (&sect;20) work stays organized without leaking into the Use Mode experience:</p>
+<div class="schema-block">smart-electronics-lab/
+  firmware/
+    elecrow-tutor/        platformio.ini, src/, include/, data/, lessons/
+    esp32-audio/          platformio.ini, src/, include/
+  shared-protocol/
+    protocol.md
+    schema/
+  lesson-packs/
+    electronics-fundamentals/   L-1_power_off.yaml, L0_hello_lab.yaml, L1_led_resistor.yaml, assets/
+    internet-radio/             R1_audio_board_test.yaml, R2_first_station.yaml, assets/
+  installers/
+    web/                  index.html, manifests/, firmware/
+    pi-image/             build-notes.md, install-scripts/, first-boot/
+  docs/
+    product-design/  user-guide/  developer-guide/  troubleshooting/
+  hardware/
+    bom/  wiring-diagrams/  enclosure-notes/</div>
+<p>Release artifacts: merged Elecrow tutor firmware binary, merged ESP32 audio firmware binary, the web installer manifest, release notes, SHA checksums, compatibility notes, known issues, and recovery instructions.</p>
+
+<h2>24. First-time user flow <span class="new-tag">NEW</span></h2>
+<p>Written as product behavior, not implementation detail.</p>
+
+<h3>Kit 1, Part 1 (Standard): first boot</h3>
+<ol>
+  <li>User plugs in the Elecrow.</li>
+  <li>The browser installer flashes Tutor Firmware.</li>
+  <li>The Elecrow boots to "Welcome to Smart Electronics Lab."</li>
+  <li>The device runs input tests: rotate knob, press knob, touch screen, confirm display.</li>
+  <li>The user connects the INA219 and breadboard power path.</li>
+  <li>The tutor displays a wiring diagram.</li>
+  <li>The user builds the LED/resistor lesson (L2, &sect;11).</li>
+  <li>The tutor reads current.</li>
+  <li>The tutor confirms pass, or diagnoses the likely mistake.</li>
+</ol>
+
+<h3>Kit 1, Part 2 (Deluxe): radio capstone</h3>
+<ol>
+  <li>User plugs in the ESP32 audio board.</li>
+  <li>The browser installer flashes Audio Firmware.</li>
+  <li>The tutor asks the user to connect the audio board to the amplifier/speaker.</li>
+  <li>The tutor sends a test-tone command.</li>
+  <li>The speaker produces a test tone (L12, &sect;11).</li>
+  <li>The user configures Wi-Fi.</li>
+  <li>The user selects the first station.</li>
+  <li>Audio plays.</li>
+  <li>The tutor displays: "You built a networked radio."</li>
+</ol>
+<p>This is the core "wow" moment of Kit 1, consistent with &sect;6 and &sect;16.</p>
+
+<h3>Kit 2 / Kit 3 first boot</h3>
+<ol>
+  <li>User flashes or boots a prepared Pi/mini PC image.</li>
+  <li>User plugs in the RTL-SDR.</li>
+  <li>SDR++ (or the chosen default SDR application) opens with a known first profile.</li>
+  <li>User confirms the waterfall display.</li>
+  <li>User connects the Elecrow.</li>
+  <li>Turning the Elecrow knob changes an SDR parameter.</li>
+  <li>The tutor confirms the control link.</li>
+</ol>
+
+<h2>25. Configuration schema <span class="new-tag">NEW</span></h2>
+<p>A minimal Kit 1 configuration schema, covering everything Configure Mode (&sect;20) needs to expose without coding:</p>
+<div class="schema-block">device:
+  name: "Smart Lab"
+  mode: "kit1"
+wifi:
+  setup_mode: "guided"
+radio:
+  default_volume: 35
+  stations:
+    - id: "station_001"
+      name: "Example Public Radio"
+      url: "https://example-stream-url"
+      format_hint: "mp3"
+lessons:
+  active_pack: "electronics-fundamentals"
+measurement:
+  current_sensor: "ina219"
+  current_calibration_mA: 0
+safety:
+  default_supply_rail: "3v3"
+  gpio_logic_voltage: "3v3"
+  max_beginner_current_mA: 20</div>
+<p>Station URLs and format support must be validated by the audio firmware, which returns human-readable errors (&sect;21) when a stream cannot be opened or decoded &mdash; not a silent failure.</p>
+
+<h2>26. Lesson schema: no-code fields <span class="rev-tag">EXTENDED</span></h2>
+<p>The &sect;7 lesson schema already carries the safety and measurement-precision fields needed for the fault-drill design. For the no-code product flow, the lesson engine also needs each lesson to self-describe its own firmware and hardware requirements, so Use Mode can validate that a lesson is runnable before starting it:</p>
+<ul>
+  <li><code>kit</code>, <code>part</code>, <code>difficulty</code> &mdash; which kit/part this lesson belongs to, and its level.</li>
+  <li><code>requires_firmware</code>, <code>requires_hardware</code> &mdash; minimum firmware version and the hardware parts a lesson needs present.</li>
+  <li><code>requires_supervision</code> &mdash; carried from &sect;7, surfaced explicitly per lesson.</li>
+  <li><code>assets</code>, <code>hints</code>, <code>on_pass</code>, <code>on_fail</code>, <code>next</code> &mdash; content and branching, already used in &sect;7's example.</li>
+</ul>
+<div class="schema-block">id: L1_led_with_resistor
+title: "LED with resistor"
+kit: kit1
+part: quiet_lab
+difficulty: beginner
+requires_firmware: "elecrow-tutor >= 0.1.0"
+requires_hardware: [bb830, usb_c_power_module, ina219, red_led, resistor_1k]
+supply_rail: 3v3
+measurement_source: ina219
+expected_units: mA
+expected_range: [1, 4]
+max_safe_current_mA: 10
+gpio_safe: true
+steps:
+  - prompt: "Disconnect power before wiring."
+    requires_power_off_before_step: true
+    wait_for: knob_press
+  - prompt: "Place the 1k resistor from row A10 to row A15."
+    wait_for: knob_press
+  - prompt: "Place the LED long leg at A15 and short leg to ground."
+    wait_for: knob_press
+  - prompt: "Turn power on."
+    measure: current_mA
+    expected_range: [1, 4]
+    on_fail:
+      open_circuit: "No current detected. Check LED polarity and ground."
+      over_range: "Current is higher than expected. Check resistor value."
+next: L2_change_resistor</div>
+<p>This is a naming/fields convention, not a second schema: it extends the same lesson-schema family already in production use at &sect;7, &sect;11.</p>
+
+<h2>27. Product branch vs. developer branch <span class="new-tag">NEW</span></h2>
+<p>Two branches, two audiences:</p>
+<div class="decisioncols">
+<div class="callout green">
+<b class="label">Product branch</b>
+<ul>
+  <li>Prebuilt firmware.</li>
+  <li>Browser flashing (&sect;22).</li>
+  <li>Guided setup.</li>
+  <li>No local development environment.</li>
+  <li>No required coding.</li>
+</ul>
+</div>
+<div class="callout blue">
+<b class="label">Developer branch</b>
+<ul>
+  <li>PlatformIO / Arduino.</li>
+  <li>Local build and serial debugging.</li>
+  <li>Firmware modification.</li>
+  <li>Custom lesson packs.</li>
+  <li>Protocol extensions.</li>
+</ul>
+</div>
+</div>
+<div class="callout red">
+<b class="label">Hard rule:</b> every required kit milestone must be achievable on the Product branch before it is considered complete. Developer Mode may expose additional learning, but it cannot be the only way to make a kit work.
+</div>
+
+<h2>28. Build plan for Claude/Codex, and the three MVPs <span class="new-tag">NEW</span></h2>
+<p>Claude and Codex are the technical implementers; the build order below produces the Product branch (&sect;27) milestones in the order a learner actually needs them, rather than building outward features first.</p>
+<ol>
+  <li>Create the repository scaffold (&sect;23).</li>
+  <li>Confirm the Elecrow board definition and vendor examples.</li>
+  <li>Build "Hello Lab" Elecrow firmware: display, knob rotation, knob press, touch.</li>
+  <li>Add INA219 readout.</li>
+  <li>Create one hard-coded LED lesson.</li>
+  <li>Convert that lesson to the YAML/structured schema (&sect;26).</li>
+  <li>Build the pass/fail current comparison.</li>
+  <li>Add a web-flashable firmware artifact (&sect;22).</li>
+  <li>Add the ESP32 audio-board proof of concept: Wi-Fi, test tone, stream URL, I2S output to the MAX98357A.</li>
+  <li>Add the Elecrow-to-audio command protocol (&sect;21).</li>
+  <li>Package the first radio-capstone firmware.</li>
+  <li>Only after Kit 1 works, prototype the Kit 2 SDR bridge.</li>
+</ol>
+<div class="mvp-box">
+<b>First MVP:</b> a learner follows the Elecrow screen to build one LED/resistor circuit, the INA219 reads current, and the Elecrow gives a correct pass/fail response. (Same MVP as &sect;2.)
+</div>
+<div class="mvp-box">
+<b>Second MVP:</b> the Elecrow sends a play command to a second ESP32 audio board, and audio comes out of a speaker.
+</div>
+<div class="mvp-box">
+<b>Third MVP:</b> the Elecrow knob changes a parameter in an SDR waterfall application running on a Pi or mini PC.
+</div>
+<p>The first MVP is not the entire product (&sect;2). It is the gate every later milestone builds behind.</p>
+
+<h2>29. Support, recovery, and flash-storage behavior <span class="new-tag">NEW</span></h2>
+<p>Use Mode (&sect;20) must assume some users will miswire hardware, flash the wrong firmware, lose Wi-Fi credentials, or use a power-only USB-C cable. Troubleshooting should be productized, not improvised:</p>
+<ul>
+  <li>Known-good firmware recovery and an "erase and reinstall" path.</li>
+  <li>Serial log access for troubleshooting, where the web flasher supports it (&sect;22).</li>
+  <li>A visible version number on each device.</li>
+  <li>Self-test screens: hardware, audio, INA219, and Wi-Fi.</li>
+  <li>A "safe mode" boot option, if feasible.</li>
+</ul>
+<p>Flash-storage behavior carries forward from &sect;7 unchanged, restated under the no-code framing: live measurements stay in RAM; only lesson completion, summaries, calibration, and settings persist. Lesson data for v1 lives in the internal flash filesystem or is firmware-embedded &mdash; no microSD is assumed for the Elecrow. Browser flashing (&sect;22) is the default firmware update path for early product versions; Wi-Fi lesson-pack download remains future work (&sect;7).</p>
+
+<h2>30. Kit 2 / Kit 3 image strategy <span class="new-tag">NEW</span></h2>
+<p>Extends &sect;13: the no-code user path must use one of a prepared Raspberry Pi image, Raspberry Pi Imager-compatible instructions, a packaged install script, a preconfigured SDR++ profile, or a preinstalled serial bridge service. Kit 2/3 users should not need to compile SDR software.</p>
+<p>The Pi/mini PC image should include: SDR++ (or the chosen SDR application, &sect;13), RTL-SDR support, a default waterfall profile, the serial bridge listener for the Elecrow, sample frequency presets, a first-run wizard, and recovery instructions.</p>
+
+<h2>31. Product identity statement <span class="new-tag">NEW</span></h2>
+<div class="callout">
+Smart Electronics Lab is not a coding kit. It is a guided electronics learning system with an optional developer track. The default learner experience is: install firmware, follow the tutor, build the circuit, observe the measurement, and unlock the next capability. Coding is a later branch, not a prerequisite for success.
+</div>
+
+<div class="footer">Smart Electronics Lab v1.4 &mdash; revised June 2026</div>
 
 </body>
 </html>
