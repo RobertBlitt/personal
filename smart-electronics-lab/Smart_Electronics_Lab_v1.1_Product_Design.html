@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Electronics Lab v1.1 Product Design</title>
+<style>
+  @page { size: Letter; margin: 0.85in; }
+  body {
+    font-family: Calibri, Arial, "Segoe UI", sans-serif;
+    color: #1a1a1a;
+    font-size: 11pt;
+    line-height: 1.45;
+    max-width: 7.6in;
+    margin: 0 auto;
+  }
+  .titlepage { text-align: center; padding-top: 1.4in; }
+  .titlepage h1 { font-size: 30pt; margin-bottom: 0.1in; }
+  .titlepage .subtitle { font-size: 14pt; color: #333; margin-bottom: 0.5in; }
+  .titlepage .meta { font-size: 11pt; color: #444; }
+  .titlepage .version-tag {
+    display: inline-block; margin-top: 0.6in; padding: 4px 14px;
+    background: #EAF1FB; border: 1px solid #5B8DC9; border-radius: 4px;
+    color: #1F4E79; font-weight: bold; font-size: 10pt;
+  }
+  h2 {
+    color: #1F4E79; font-size: 15pt; border-bottom: 2px solid #1F4E79;
+    padding-bottom: 3px; margin-top: 28px;
+  }
+  h3 { color: #2E75B6; font-size: 12.5pt; margin-top: 18px; }
+  h4 { color: #2E75B6; font-size: 11.5pt; margin-top: 14px; margin-bottom: 4px;}
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .callout {
+    background: #FDF3D8; border: 1px solid #D8B45A; border-radius: 4px;
+    padding: 10px 14px; margin: 12px 0; font-size: 10.5pt;
+  }
+  .callout.blue { background: #EAF1FB; border-color: #5B8DC9; }
+  .callout.red  { background: #FCE9E9; border-color: #D86A6A; }
+  .callout b.label { color: #1F4E79; }
+  .figure-caption { color: #2E75B6; font-style: italic; font-size: 10pt; margin: 4px 0 16px 0; }
+  .new-tag {
+    display: inline-block; background: #2E7D32; color: white; font-size: 8.5pt;
+    font-weight: bold; border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .rev-tag {
+    display: inline-block; background: #B7791F; color: white; font-size: 8.5pt;
+    font-weight: bold; border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 18px 0; font-size: 10pt; }
+  th, td { border: 1px solid #B7C6DE; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #D9E2F3; color: #1F4E79; }
+  tr.cat-row td { background: #EEF3FB; font-weight: bold; color: #1F4E79; }
+  td.small { font-size: 9.3pt; color: #444; }
+  .diagram {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; margin: 18px 0; flex-wrap: wrap;
+  }
+  .diagram.column { flex-direction: column; }
+  .node {
+    border: 1px solid #888; border-radius: 5px; padding: 10px 12px;
+    font-size: 9.6pt; text-align: center; min-width: 1.2in; max-width: 1.7in;
+  }
+  .node b { display: block; font-size: 10.2pt; margin-bottom: 3px; }
+  .node.yellow { background: #FCF3CF; border-color: #D4AC0D; }
+  .node.gray   { background: #F2F2F2; border-color: #999999; }
+  .node.blue   { background: #D6EAF8; border-color: #5499C7; }
+  .node.green  { background: #DCEFE0; border-color: #5C9E6E; }
+  .arrow { font-size: 16pt; color: #555; }
+  .arrow-label { font-size: 8.6pt; color: #555; text-align: center; max-width: 0.9in; }
+  .arrow-col { display: flex; flex-direction: column; align-items: center; }
+  .schema-block {
+    background: #F7F7F7; border: 1px solid #CCC; border-radius: 4px;
+    padding: 10px 14px; font-family: "Courier New", monospace; font-size: 9pt;
+    white-space: pre; overflow-x: auto; margin: 10px 0 18px 0;
+  }
+  .footer { text-align: center; color: #888; font-size: 9pt; margin-top: 26px; }
+  .pagebreak { page-break-before: always; }
+  .changelog-item { margin: 8px 0; padding-left: 4px; }
+  .changelog-item b { color: #1F4E79; }
+</style>
+</head>
+<body>
+
+<div class="titlepage">
+  <h1>Smart Electronics Lab v1.1</h1>
+  <div class="subtitle">Guided breadboard learning system, communications console, and SDR workstation roadmap</div>
+  <div class="meta">Prepared for Bob Litt<br>Revised June 2026 &mdash; Design Review Pass</div>
+  <div class="version-tag">v1.1 &middot; supersedes v1.0</div>
+</div>
+
+<div class="pagebreak"></div>
+
+<h2>0. What changed in v1.1</h2>
+<p>This revision keeps every decision from v1.0 (the feedback-loop concept, the three-stage roadmap, the BOM, and the lesson sequence) and closes the gaps a design review surfaced. Nothing below removes scope &mdash; it makes several "obviously fine" assumptions explicit so they don't become rework later.</p>
+
+<div class="changelog-item">1. <b>Stage 2 split into 2a/2b.</b> "Communications console" quietly mixed pedagogy (still teaching) with appliance features (just useful). Section 2 now names that split so the feedback-loop differentiator doesn't silently disappear partway through the roadmap.</div>
+<div class="changelog-item">2. <b>Graduation criteria added to the roadmap.</b> Figure 2 said "graduate" and "add compute" without saying what that means. Each stage transition now has a concrete, testable exit condition.</div>
+<div class="changelog-item">3. <b>New Section 3, "Open risks to resolve before Stage 2."</b> Audio-path feasibility on the Elecrow, the Stage1&rarr;Stage3 control interface, and the warn-vs-shutoff fault behavior were implied but undecided. They're now explicit open items with a recommended default.</div>
+<div class="changelog-item">4. <b>BOM now carries durable specs, not just links.</b> Each component row has an Interface/Spec column that survives an Amazon listing going stale. ASIN/links are collected separately in Section 15 and labeled as sourcing references, not the spec of record.</div>
+<div class="changelog-item">5. <b>Lesson content has a concrete schema.</b> Section 7 adds an actual YAML lesson record. Section 12 already named curriculum as the real commercial asset &mdash; it didn't have a format. Now it does.</div>
+<div class="changelog-item">6. <b>V1 fault behavior is defined, not just disclaimed.</b> Section 8 specifies exactly what the lesson engine does on over-current at V1, instead of only noting that auto-shutoff doesn't exist yet.</div>
+<div class="changelog-item">7. <b>Two lessons added.</b> L&minus;1 (power-off-before-rewiring habit) before the first live circuit, and L8.5 (induced fault drill) so a learner sees a real fault warning under supervision before they see one by accident.</div>
+
+<h2>1. Executive decision</h2>
+<ul>
+  <li>The project is a guided electronics learning product, not a generic electronics kit.</li>
+  <li>The Elecrow rotary display is the front-panel tutor. It displays steps, accepts knob/touch input, and becomes the control head for the communications console and later the SDR workstation.</li>
+  <li>The breadboard stays standard. Smart behavior comes from power measurement and software, not from a proprietary smart breadboard.</li>
+  <li>The first smart version uses off-the-shelf parts: a USB-C breadboard power supply, an inline USB-C power meter for visible measurement, and an I2C current/voltage sensor the Elecrow can read.</li>
+</ul>
+<div class="callout">
+  <b class="label">Short version:</b> Buy the BusBoard BB830, USB-C power module, USB-C power meter, Adafruit INA219 current sensor, Qwiic/STEMMA cable kit, jumper wires, and a small set of components. Do not buy a giant Arduino kit.
+</div>
+
+<h2>2. Three-stage architecture <span class="rev-tag">REVISED</span></h2>
+
+<div class="diagram">
+  <div class="node yellow"><b>Stage 1</b>Smart Electronics Lab<br>Ohm's law, LEDs, buttons, pots, current measurement.<br>Elecrow displays the lesson.</div>
+  <div class="arrow-col"><span class="arrow">&rarr;</span><span class="arrow-label">graduate when L0&ndash;L9 run unattended (see exit criteria below)</span></div>
+  <div class="node gray"><b>Stage 2a / 2b</b>Console Build / Communications Console<br>2a: Wi-Fi &amp; protocol lessons.<br>2b: internet radio, favorites, weather, ham reference.<br>Elecrow is the front panel.</div>
+  <div class="arrow-col"><span class="arrow">&rarr;</span><span class="arrow-label">add compute when an interface contract exists (Section 3.2)</span></div>
+  <div class="node green"><b>Stage 3</b>SDR Workstation<br>15" monitor, Raspberry Pi / mini PC, RTL-SDR, waterfall, maps.<br>Elecrow becomes the control head.</div>
+</div>
+<div class="figure-caption">Figure 2. Three-stage roadmap with graduation criteria (v1.1 adds the criteria; the stages are unchanged from v1.0).</div>
+
+<div class="callout">
+  <b class="label">Design rule (unchanged):</b> every early purchase remains useful later. The breadboard teaches and prototypes. It does not become the final enclosure.
+</div>
+
+<h3>Stage 1: Smart Electronics Lab</h3>
+<p>Learn Ohm's law, LEDs, resistors, buttons, potentiometers, basic transistor switching, and simple audio. The display presents instructions and the smart power path measures whether the circuit behaves as expected.</p>
+<p><b>Exit criteria:</b> L0&ndash;L9 (Section 10) run end-to-end with the INA219 in the loop, and at least one beginner other than the builder completes the sequence without external help beyond the on-screen tutor.</p>
+
+<h3>Stage 2a: Guided Console Build <span class="new-tag">SPLIT FROM STAGE 2</span></h3>
+<p>Same front panel and breadboard. New lessons teach Wi-Fi association, fetching a JSON API (e.g., weather), and basic protocol concepts &mdash; still using the instruction-plus-measurement loop, just measuring network/software state instead of only voltage and current.</p>
+
+<h3>Stage 2b: Communications Console <span class="new-tag">SPLIT FROM STAGE 2</span></h3>
+<p>Internet radio, favorites, weather screens, local reference screens, basic ham information, and eventually an audio path. This is an appliance feature set built <i>on</i> the Stage 1/2a hardware and skills &mdash; it is not itself a measurement-feedback lesson. Treat it as a separate deliverable from 2a so "is this still teaching, or is it now a finished gadget?" has an explicit answer (it's the latter, and that's fine, as long as it's not budgeted as if it were lesson content).</p>
+<p><b>Exit criteria:</b> a still photo / short demo of the console playing an internet radio station from a saved favorite, on battery-independent USB-C power, with the same Elecrow unit used in Stage 1.</p>
+
+<h3>Stage 3: SDR Workstation</h3>
+<p>Add a Raspberry Pi or mini PC, the existing 15" monitor, and an RTL-SDR receiver. The heavy compute handles FFT, waterfall display, maps, decoding, and larger UIs. The Elecrow remains the control head.</p>
+<p><b>Exit criteria:</b> the Elecrow's knob and touch input visibly drive a parameter (e.g., tuned frequency or zoom) in an SDR application running on the separate compute, over whichever interface Section 3.2 settles on.</p>
+
+<h2>3. Open risks to resolve before Stage 2 <span class="new-tag">NEW</span></h2>
+<p>None of these block ordering the Stage 1 parts list. They block committing Stage 2 scope, so they're worth a short spike now rather than a redesign later.</p>
+
+<h3>3.1 Audio path feasibility</h3>
+<p>Stage 2b assumes the Elecrow can stream and play internet radio. The confirmed spec (Section 15) lists UART, I2C, FPC expansion, 16M flash, and 8M PSRAM &mdash; it does not confirm an I2S output or amplifier. Decoding a compressed audio stream over Wi-Fi while also driving the touch UI is a real CPU/memory budget question on an ESP32-S3, not a given.</p>
+<div class="callout blue"><b class="label">Recommendation:</b> before Stage 2b planning solidifies, run a 30&ndash;60 minute spike: confirm whether the Elecrow exposes I2S pins on its FPC/GPIO connector, and if not, budget for an add-on I2S DAC/amp module (e.g., MAX98357A class) in the Stage 2 BOM.</div>
+
+<h3>3.2 Stage 1 &rarr; Stage 3 control interface contract</h3>
+<p>"The Elecrow remains the control head" is a conclusion, not yet a design. If Stage 1/2 firmware hard-codes how knob/touch events are handled internally, that code won't necessarily transfer to "send this event to a Pi running GNU Radio."</p>
+<div class="callout blue"><b class="label">Recommendation:</b> adopt USB-serial (a simple line-based or JSON-per-line protocol over the existing USB-C data link) as the V1 contract for Stage 3, since it requires no new hardware and is easy to bring up. Define the message schema (e.g., <code>{"event":"knob","delta":-1}</code>) when Stage 2 firmware is written, even though it isn't used until Stage 3, so the event-handling code in Stage 1/2 already emits in that shape internally.</div>
+
+<h3>3.3 Warn-vs-shutoff fault behavior at V1</h3>
+<p>Section 8 (V1, software-observed power) can detect an over-current fault via the INA219 but cannot cut power. "Warn" needs an exact, specified behavior &mdash; see Section 8 below, which now defines it directly instead of leaving it implicit.</p>
+
+<h2>4. Stage 1 hardware design</h2>
+
+<div class="diagram column">
+  <div class="diagram">
+    <div class="node gray">USB-C wall charger or laptop</div>
+    <span class="arrow">&rarr;</span>
+    <div class="node blue">Plugable USB-C power meter<br>visible V, A, W</div>
+    <span class="arrow">&rarr;</span>
+    <div class="node blue">Treedix USB-C breadboard power<br>5V and 3.3V rails</div>
+  </div>
+  <div class="arrow">&darr;<span class="arrow-label">powers rails</span></div>
+  <div class="diagram">
+    <div class="node blue">Elecrow 2.1" ESP32-S3 rotary display<br>lesson engine, knob, touch UI</div>
+    <span class="arrow">&larr;</span>
+    <div class="node gray">BusBoard BB830 breadboard<br>LEDs, resistors, buttons, pots, buzzer, transistor tests</div>
+    <span class="arrow">&larr;</span>
+    <div class="node yellow">Adafruit INA219<br>power sensor &mdash; senses load, I2C reading</div>
+  </div>
+</div>
+<div class="figure-caption">Figure 3. Stage 1 hardware architecture (unchanged from v1.0).</div>
+
+<div class="callout">
+  Version 0 is human-observed with the USB-C meter. Version 1 is software-observed with the INA219. Version 2 becomes a custom Smart Power Module.
+</div>
+
+<h3>Mounting answer</h3>
+<p>The Elecrow display does not need to sit in the breadboard. It sits next to the BB830 on the desk or mat, then connects to the breadboard through its GPIO/I2C connector or pigtail. The breadboard is for temporary circuits. The display is the tutor and controller.</p>
+
+<h3>Smart board answer</h3>
+<p>Do not start by designing a proprietary smart breadboard. Start by making the power path smart. If the Elecrow can read voltage and current from an INA219 sensor over I2C, the lesson engine can compare expected and measured behavior.</p>
+
+<h2>5. Bill of materials <span class="rev-tag">REVISED</span></h2>
+<p>v1.0 mixed durable specs with Amazon links in the same cell, which means the spec disappears if the listing changes. The table below keeps an <b>Interface / Spec</b> column that doesn't depend on any retailer; ASINs and links are collected in Section 15 as sourcing references only.</p>
+
+<table>
+<tr><th>#</th><th>Category</th><th>Item</th><th>Interface / Spec</th><th>Qty / Timing</th><th>Rationale</th></tr>
+<tr class="cat-row"><td>1</td><td>Already bought</td><td>ELECROW ESP32 Rotary Display, 2.1" 480x480 IPS round, knob + touch</td><td class="small">ESP32-S3, Wi-Fi/BLE, UART, I2C, FPC expansion, 16M flash, 8M PSRAM, 5V/1A input</td><td>1 / done</td><td class="small">Front-panel tutor and future control head. Keep as main UI.</td></tr>
+<tr class="cat-row"><td>2</td><td>Core lab</td><td>BusBoard BB830 solderless breadboard</td><td class="small">830 tie points, 4 power rails, 36V/2A rating, 21&ndash;26 AWG</td><td>1 / Buy now</td><td class="small">Premium standard breadboard, correct size for lessons.</td></tr>
+<tr class="cat-row"><td>3</td><td>Power</td><td>Treedix USB-C breadboard power module</td><td class="small">USB-C in, 3.3V/5V regulated rail out</td><td>1 pack / Buy now</td><td class="small">First version of the lab power source.</td></tr>
+<tr class="cat-row"><td>4</td><td>Visible measurement</td><td>Plugable USB-C Power Meter Tester</td><td class="small">Inline pass-through, OLED V/A/W readout</td><td>1 / Buy now</td><td class="small">Makes Ohm's law visible immediately (V0).</td></tr>
+<tr class="cat-row"><td>5</td><td>Smart measurement</td><td>Adafruit INA219 current sensor, STEMMA QT</td><td class="small">High-side DC, 26V target, &plusmn;3.2A, I2C, address-selectable</td><td>1 / Buy now</td><td class="small">First real smart feedback module (V1).</td></tr>
+<tr class="cat-row"><td>6</td><td>Smart wiring</td><td>Qwiic/STEMMA QT cable kit with breadboard jumpers</td><td class="small">JST-SH 4-pin to breadboard pins</td><td>1 / Buy now</td><td class="small">Connects STEMMA/Qwiic sensors to the breadboard.</td></tr>
+<tr class="cat-row"><td>7</td><td>Wiring</td><td>Silicone flexible Dupont jumper wires</td><td class="small">M-M, M-F, F-F</td><td>1 kit / Buy now</td><td class="small">Far less stiff/annoying than standard kit wires.</td></tr>
+<tr class="cat-row"><td>8</td><td>Resistors</td><td>Aniann 1% metal film resistor assortment</td><td class="small">1280 pcs, broad E-series coverage</td><td>1 / Buy now</td><td class="small">Needed for every lesson.</td></tr>
+<tr class="cat-row"><td>9</td><td>LEDs</td><td>BOJACK 5mm LED assortment</td><td class="small">5 colors</td><td>1 / Buy now</td><td class="small">Makes current, polarity, and resistance visible.</td></tr>
+<tr class="cat-row"><td>10</td><td>Buttons</td><td>BOJACK tactile pushbutton assortment</td><td class="small">10 values</td><td>1 / Buy now</td><td class="small">Input lessons, later physical controls.</td></tr>
+<tr class="cat-row"><td>11</td><td>Potentiometers</td><td>MCIGICM 10K breadboard trim pots with knobs</td><td class="small">10 pcs, 10K&Omega;</td><td>1 / Buy now</td><td class="small">Voltage dividers, analog input, dimming.</td></tr>
+<tr class="cat-row"><td>12</td><td>Capacitors</td><td>EMGTMS ceramic capacitor kit</td><td class="small">24 values, 480 pcs, 10pF&ndash;10&micro;F</td><td>1 / Buy soon</td><td class="small">RC timing, signal smoothing. Not needed for L1.</td></tr>
+<tr class="cat-row"><td>13</td><td>Electrolytic capacitors</td><td>Hilitchi electrolytic capacitor assortment</td><td class="small">300 pcs</td><td>1 / Buy soon</td><td class="small">Power smoothing, later audio work.</td></tr>
+<tr class="cat-row"><td>14</td><td>Transistors</td><td>PLUSIVO BJT assortment</td><td class="small">NPN and PNP</td><td>1 / Buy soon</td><td class="small">Switching larger loads from a GPIO pin.</td></tr>
+<tr class="cat-row"><td>15</td><td>Sound</td><td>Passive/active buzzer module pack</td><td class="small">Arduino/ESP32 compatible</td><td>1 / Buy soon</td><td class="small">Digital output, PWM/tone, audio cues.</td></tr>
+<tr class="cat-row"><td>16</td><td>Storage</td><td>Umirokin clear organizer boxes</td><td class="small">2 pack, adjustable dividers</td><td>1 / Buy now</td><td class="small">Keeps parts from becoming a loose bag.</td></tr>
+<tr class="cat-row"><td>17</td><td>Work surface</td><td>Anti-static silicone electronics mat</td><td class="small">~16" x 12"</td><td>1 / Optional</td><td class="small">Contains the bench. Not required.</td></tr>
+</table>
+
+<h2>6. What to buy first</h2>
+<ul>
+  <li>BusBoard BB830</li>
+  <li>Treedix USB-C breadboard power module</li>
+  <li>Plugable USB-C power meter</li>
+  <li>Adafruit INA219 current sensor</li>
+  <li>Qwiic/STEMMA cable kit</li>
+  <li>Silicone jumper wires</li>
+  <li>Resistor kit</li>
+  <li>LED kit</li>
+  <li>Button kit</li>
+  <li>10K potentiometers</li>
+  <li>Organizer box</li>
+</ul>
+<p><b>Defer:</b> capacitor kits, transistor kit, and buzzer can be bought now for a complete Stage 1 box, but are not necessary for the first two or three lessons.</p>
+
+<h2>7. Software loading and lesson content <span class="rev-tag">REVISED</span></h2>
+
+<div class="diagram">
+  <div class="node blue">Firmware<br>Display driver, knob/touch input, I2C sensor reader, lesson runtime, Wi-Fi update support</div>
+  <span class="arrow">&rarr;<div class="arrow-label">runs</div></span>
+  <div class="node yellow">Lesson content<br>Steps, images, expected readings, hints, questions, explanations</div>
+  <span class="arrow">&larr;<div class="arrow-label">checks against</div></span>
+  <div class="node gray">Hardware state<br>Voltage, current, power, faults, open circuit, over-current</div>
+</div>
+<div class="diagram">
+  <span class="arrow">&darr;<div class="arrow-label">drives</div></span>
+</div>
+<div class="diagram">
+  <div class="node gray" style="max-width:3in;">On-screen tutor<br>"Place this resistor. Measure here. Press when done. Expected: 12&ndash;18 mA. Measured: 14.8 mA. Continue."</div>
+</div>
+<div class="figure-caption">Figure 4. Software architecture for the tutor and lesson packs (unchanged structure; content format below is new).</div>
+
+<h3>Lesson schema <span class="new-tag">NEW</span></h3>
+<p>Section 12 (Product concept) calls curriculum the real commercial asset and "course packs" the scaling mechanism. That only works if a lesson is a structured record, not a one-off firmware routine. A minimal schema for the lesson engine in Figure 4:</p>
+<div class="schema-block">id: L1_led_with_resistor
+title: "LED with resistor"
+steps:
+  - prompt: "Place a 330 ohm resistor from row A10 to A15."
+    wait_for: knob_press
+  - prompt: "Place the LED long leg at A15, short leg to the ground rail."
+    wait_for: knob_press
+  - prompt: "Turn power on."
+    measure: current_mA
+    expected_range: [8, 15]
+    on_pass: { advance: true, message: "Correct. Press to continue." }
+    on_fail:
+      open_circuit: "No current detected. Check the ground rail connection."
+      over_range: "Current is higher than expected. Check resistor value and LED polarity."
+hints:
+  - "LED current is set mostly by the resistor, not the LED."
+next: L2_change_the_resistor
+</div>
+<p>This is deliberately small. The fields map directly to Figure 4's "Lesson content" box (steps, images, expected readings, hints) and "Hardware state" box (the <code>measure</code> / <code>expected_range</code> / fault keys). New course packs (Section 12) are new files in this format, not new firmware.</p>
+
+<h3>Developer mode</h3>
+<p>Connect the Elecrow to a Mac or PC with a USB-C data cable. Use PlatformIO first if possible, or Arduino IDE if following Elecrow examples. Upload firmware over USB-C. This is how the first prototypes should be built.</p>
+
+<h3>User mode</h3>
+<p>Later, the device should update over Wi-Fi. A user would choose a lesson pack from a menu and the device would download content. This is not Stage 1 work.</p>
+
+<h3>MicroSD answer</h3>
+<p>Do not buy a microSD card for this board yet. The Elecrow listing specifies 16M flash, UART, I2C, and FPC expansion, but does not advertise a microSD slot. For v1, keep lesson content (in the schema above) in firmware or internal flash. Add external SD only if hardware inspection confirms a usable slot, or add an SPI SD module later.</p>
+
+<h3>Lesson engine</h3>
+<p>The correct architecture is a small lesson engine, not custom firmware per lesson. The engine knows how to display a step, draw a wiring diagram, wait for a knob press, ask a question, read the current sensor, compare expected values against the schema above, and advance.</p>
+
+<h2>8. Smart Power Module path <span class="rev-tag">REVISED</span></h2>
+
+<h3>V0: Visible power</h3>
+<p>Use the Plugable USB-C meter. The learner reads voltage, current, and watts manually. Sufficient for Ohm's law lessons.</p>
+
+<h3>V1: Software-observed power</h3>
+<p>Wire the INA219 in series with the breadboard load, connected to the Elecrow via I2C. The lesson engine reads current and voltage directly.</p>
+<div class="callout red">
+  <b class="label">V1 fault behavior (defined, not implicit):</b> on over-current or out-of-range read, the lesson engine (1) shows a full-screen red fault banner, (2) displays the explicit instruction "Disconnect power now," and (3) logs the fault event with timestamp and reading. There is no automatic cutoff at V1 &mdash; the learner is the disconnect mechanism. This is acceptable for a supervised lab but should be stated to anyone using the device unsupervised, and is the reason L8.5 (Section 10) exists: a learner should see this exact banner once, deliberately, before encountering it by accident.
+</div>
+
+<h3>V2: Protected smart module</h3>
+<p>Design a custom board with USB-C input, current limiting, measurement, fault reporting, and a safe disconnect circuit (e.g., a load switch IC gated by the fault condition). This becomes the commercial product core, and is the first version where "warn" can become "warn and cut."</p>
+
+<h3>V3: Row-aware smart breadboard</h3>
+<p>Only after the power module works, explore sensing rows or continuity. This is much harder and should not be the first product.</p>
+
+<h2>9. Recommended desk layout for v1</h2>
+<div class="diagram">
+  <div class="node blue">Elecrow rotary display<br>front-panel tutor<br>not inserted into breadboard</div>
+  <span class="arrow-label">jumpers</span>
+  <div class="node gray" style="min-width:2.2in;">BusBoard BB830<br>standard solderless breadboard<br>experiments happen here</div>
+  <div class="node gray">Parts box<br>R / LED / C / SW / POT</div>
+</div>
+<div class="diagram">
+  <div class="node blue">Plugable USB-C meter<br>inline at power input</div>
+  <div class="node blue">Treedix USB-C power module<br>5V / 3.3V rails</div>
+  <span class="arrow-label">sense path</span>
+  <div class="node yellow">INA219 sensor<br>reads current and voltage<br>I2C to Elecrow</div>
+</div>
+<div class="figure-caption">Figure 5. Recommended desk layout (unchanged from v1.0).</div>
+
+<h2>10. First guided lesson sequence <span class="rev-tag">REVISED</span></h2>
+
+<p><b>L&minus;1: Power-off habit</b> <span class="new-tag">NEW</span> &mdash; before any live circuit: the screen asks the learner to disconnect power, then walks through placing/removing a single jumper, then reconnect. No measurement yet. This converts Section 11's safety assumption ("disconnect power before rewiring") from a written rule into a practiced habit before it matters.</p>
+<p><b>L0: Hello Lab:</b> Load firmware over USB-C. The display shows a welcome screen, knob movement, and press-to-advance.</p>
+<p><b>L1: LED with resistor:</b> Build a simple LED circuit. The screen teaches polarity, current limiting, and expected current.</p>
+<p><b>L2: Change the resistor:</b> Swap 1k, 470&Omega;, and 220&Omega; resistors. The screen asks the learner to predict brightness and current before measuring.</p>
+<p><b>L3: Series resistance:</b> Place two resistors in series and measure lower current.</p>
+<p><b>L4: Parallel branches:</b> Build two LED branches and observe total current increase.</p>
+<p><b>L5: Button input:</b> Wire a pushbutton and pull-down resistor. The display changes when the button is pressed.</p>
+<p><b>L6: Potentiometer:</b> Use a 10K pot as a voltage divider. Turn the pot and watch analog voltage change.</p>
+<p><b>L7: Software-controlled LED:</b> Use the Elecrow to drive an LED through a resistor. Then map knob position to brightness.</p>
+<p><b>L8: Smart measurement:</b> Insert the INA219 into the load path. The display compares expected and measured current.</p>
+<p><b>L8.5: Induced fault drill</b> <span class="new-tag">NEW</span> &mdash; the lesson deliberately has the learner swap in a resistor value low enough to trigger the V1 over-current fault banner (Section 8) under supervision, then walk through the "disconnect power now" response. The point is to make the fault screen familiar and procedural, not alarming, the first time it appears for real.</p>
+<p><b>L9: Transistor switch:</b> Use a transistor to drive a buzzer or higher-current LED path from a GPIO pin.</p>
+
+<h2>11. Example on-screen lesson flow</h2>
+<ol>
+  <li>Screen: Find a 330&Omega; resistor. Press the knob when found.</li>
+  <li>Screen: Place one end at row A10 and the other at row A15.</li>
+  <li>Screen: Place LED long leg at A15 and short leg to the ground rail.</li>
+  <li>Screen: Connect 5V rail through the resistor path. Keep power off until the next step.</li>
+  <li>Screen: Turn power on. Expected current is about 8 to 15 mA depending on LED color and supply voltage.</li>
+  <li>Screen, V0: Read the Plugable meter and enter or select the closest current.</li>
+  <li>Screen, V1: Sensor reads 11.4 mA. Correct. Press to continue.</li>
+  <li>Screen: Replace the 330&Omega; resistor with 1k. Predict whether the LED gets brighter or dimmer.</li>
+</ol>
+
+<h2>12. Product concept <span class="rev-tag">REVISED</span></h2>
+
+<h3>What is distinctive</h3>
+<p>Most electronics kits give instructions. This lab gives feedback. The device does not merely say what to build. It observes voltage and current and tells the learner what likely happened.</p>
+
+<h3>Why this can be a product</h3>
+<p>The first product does not require a proprietary breadboard. The first sellable unit could be a smart USB-C power and measurement module, plus an ESP32 display tutor, plus a standard BB830.</p>
+
+<h3>Course packs</h3>
+<p>The same hardware could support course packs: Electronics Fundamentals, Internet Radio, Amateur Radio, SDR Basics, Sensors, Home Automation, and Robotics. With the lesson schema in Section 7, each course pack is a set of schema files plus assets, not a firmware fork &mdash; this is what makes "course pack" a real product line rather than a slogan.</p>
+
+<h3>Commercial risk</h3>
+<p>The difficult parts are not the first hardware. The hard work is curriculum design, safe fault handling, reliable connectoring, and making lessons resilient when beginners miswire circuits. The lesson schema and the V1 fault behavior (Sections 7&ndash;8) are the first concrete artifacts against that risk, not just statements of it.</p>
+
+<h2>13. Safety scope</h2>
+<ul>
+  <li>Stage 1 is low-voltage DC only: 3.3V and 5V breadboard experiments.</li>
+  <li>No AC mains. No wall outlet experiments. No exposed lithium battery charging experiments.</li>
+  <li>Assume beginner mistakes. Use current limiting, start with higher resistor values, and disconnect power before rewiring &mdash; now practiced directly in L&minus;1.</li>
+  <li>The smart module should detect over-current and shut off or warn before damage occurs. At V1, the off-the-shelf module can only warn (Section 8); a learner has practiced responding to that warning by L8.5 before it can happen unsupervised.</li>
+</ul>
+
+<h2>14. Next build action after parts arrive <span class="rev-tag">REVISED</span></h2>
+<ol>
+  <li>Photograph the Elecrow connector set that arrives in the box. The exact pigtail determines the cleanest breadboard connection.</li>
+  <li>Load a basic Elecrow example over USB-C. Confirm the knob, press, touch, and display work.</li>
+  <li><b>Check for I2S/audio pins on the Elecrow's FPC/GPIO breakout</b> <span class="new-tag">NEW</span> &mdash; resolves Section 3.1 before Stage 2b BOM is finalized.</li>
+  <li>Assemble the BB830 rails with the Treedix power module. Verify 5V and 3.3V with the multimeter before connecting the Elecrow.</li>
+  <li>Build the first LED/resistor lesson manually using the USB-C meter for visible feedback.</li>
+  <li>Add the INA219 and make the Elecrow display current and voltage. That is the first true Smart Lab milestone.</li>
+  <li><b>Draft the Stage 3 control-interface message schema</b> <span class="new-tag">NEW</span> &mdash; even a one-page note, so Stage 2 firmware's event handling already emits knob/touch events in that shape (Section 3.2).</li>
+</ol>
+
+<h2>15. Sourcing references <span class="rev-tag">RENAMED from "Source notes"</span></h2>
+<p>These are retailer listings, not the spec of record (see the Interface/Spec column in Section 5). Prices, stock, and listing details change; if a link goes stale, search by ASIN or product name.</p>
+<ul>
+  <li><b>Elecrow 2.1" rotary display</b> (ASIN B0G3TZGRC4): rotary knob, capacitive touch, ESP32-S3, Wi-Fi/BLE, UART, I2C, FPC expansion, 16M flash, 8M PSRAM, 5V/1A input.</li>
+  <li><b>BusBoard BB830</b> (ASIN B0040Z4QN8): 830 tie points, 4 power rails, 6.5 x 2.2 x 0.3 in, 36V/2A rating, 21&ndash;26 AWG insertion wire size.</li>
+  <li><b>Treedix USB-C breadboard power module</b> (ASIN B0CN6HYCJD): USB-C charging/power, 3.3V and 5V outputs.</li>
+  <li><b>Plugable USB-C power meter</b> (ASIN B0B5W5NKKN): voltage and amperage measurement, power monitoring, bidirectional connection, data passthrough.</li>
+  <li><b>Adafruit INA219</b> (ASIN B09CBSLXN7): high-side current measurement, 26V target voltage, &plusmn;3.2A range, I2C address options.</li>
+  <li><b>Adafruit INA260</b> (official page): higher-capacity future option, integrated shunt, I2C, 3V/5V logic compatible, up to 36V/15A. Candidate for the V2 custom Smart Power Module.</li>
+</ul>
+
+<div class="footer">Smart Electronics Lab v1.1 &mdash; revised June 2026</div>
+
+</body>
+</html>
