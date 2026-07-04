@@ -33,10 +33,16 @@ Snapshot state;              /* guarded by stateMutex */
 uint32_t lastGoodPollMs = 0; /* guarded by stateMutex */
 
 /* Pending intents, guarded by the same mutex. A full command queue would
- * be overkill: tuning coalesces into one delta, and mode changes only
- * keep the most recent request. */
-int32_t pendingTuneDelta = 0;
-uint32_t pendingTuneAbsolute = 0; /* 0 = none pending */
+ * be overkill: tuning coalesces naturally (every detent updates the
+ * locally shown frequency, and one dirty flag says "push it"), and mode
+ * changes only keep the most recent request.
+ *
+ * Design note from the pass-two review: the shown frequency
+ * (state.freqHz) is the single source of truth for what to send. An
+ * earlier version accumulated a separate delta AND optimistically moved
+ * the shown value, then added the delta again at send time, doubling
+ * every encoder step. One value plus one flag cannot double-count. */
+bool pendingFreqSend = false;
 bool pendingModeValid = false;
 uint8_t pendingMode = 0;
 bool pendingDataMode = false;
@@ -115,51 +121,45 @@ void markLinkDown() {
 bool flushIntents() {
     /* Snapshot-and-clear the pending intents under the lock, then do the
      * slow network work outside it. */
-    int32_t tuneDelta;
-    uint32_t tuneAbs;
+    bool freqSend;
+    uint32_t freqToSend;
     bool modeValid;
     uint8_t mode;
     bool dataMode;
     uint8_t filter;
-    uint32_t currentFreq;
 
     xSemaphoreTake(stateMutex, portMAX_DELAY);
-    tuneDelta = pendingTuneDelta;
-    tuneAbs = pendingTuneAbsolute;
+    freqSend = pendingFreqSend;
+    freqToSend = state.freqHz; /* already clamped by tuneBy/tuneTo */
     modeValid = pendingModeValid;
     mode = pendingMode;
     dataMode = pendingDataMode;
     filter = state.filter;
-    currentFreq = state.freqHz;
-    pendingTuneDelta = 0;
-    pendingTuneAbsolute = 0;
+    pendingFreqSend = false;
     pendingModeValid = false;
     xSemaphoreGive(stateMutex);
 
-    if (tuneAbs != 0 || tuneDelta != 0) {
-        /* An absolute jump wins; a relative delta rides on current state. */
-        int64_t target = (tuneAbs != 0)
-                             ? static_cast<int64_t>(tuneAbs)
-                             : static_cast<int64_t>(currentFreq) + tuneDelta;
-        /* Clamp to the radio's receive range so a wild knob spin cannot
-         * ask for negative kilohertz. */
-        if (target < 500000) target = 500000;
-        if (target > 56000000) target = 56000000;
-
+    if (freqSend) {
         civ::Reply reply;
-        if (!transact(civ::makeSetFrequency(static_cast<uint32_t>(target)), reply)) {
+        if (!transact(civ::makeSetFrequency(freqToSend), reply)) {
+            /* Link error: re-arm the flag so the frequency is pushed once
+             * the connection comes back. Any detents that landed while we
+             * were sending set the flag again anyway. */
+            xSemaphoreTake(stateMutex, portMAX_DELAY);
+            pendingFreqSend = true;
+            xSemaphoreGive(stateMutex);
             return false;
         }
-        /* Reflect it locally right away so the UI does not rubber-band
-         * while waiting for the next poll cycle. */
-        xSemaphoreTake(stateMutex, portMAX_DELAY);
-        state.freqHz = static_cast<uint32_t>(target);
-        xSemaphoreGive(stateMutex);
     }
 
     if (modeValid) {
         civ::Reply reply;
         if (!transact(civ::makeSetMode(mode, dataMode, filter), reply)) {
+            xSemaphoreTake(stateMutex, portMAX_DELAY);
+            pendingModeValid = true;
+            pendingMode = mode;
+            pendingDataMode = dataMode;
+            xSemaphoreGive(stateMutex);
             return false;
         }
         xSemaphoreTake(stateMutex, portMAX_DELAY);
@@ -209,7 +209,7 @@ void radioTask(void *) {
                     xSemaphoreTake(stateMutex, portMAX_DELAY);
                     /* Only accept the poll if the user is not mid-spin;
                      * otherwise the poll would briefly revert the display. */
-                    if (pendingTuneDelta == 0 && pendingTuneAbsolute == 0) {
+                    if (!pendingFreqSend) {
                         state.freqHz = reply.freqHz;
                     }
                     xSemaphoreGive(stateMutex);
@@ -274,21 +274,23 @@ Snapshot snapshot() {
 
 void tuneBy(int32_t deltaHz) {
     xSemaphoreTake(stateMutex, portMAX_DELAY);
-    pendingTuneDelta += deltaHz;
-    /* Give instant visual feedback: move the local number immediately.
-     * The radio catches up within one flush cycle. */
+    /* Move the local number immediately for instant dial feedback, clamp
+     * to the receive range, and flag it for sending. The radio catches up
+     * within one flush cycle. */
     int64_t shown = static_cast<int64_t>(state.freqHz) + deltaHz;
     if (shown < 500000) shown = 500000;
     if (shown > 56000000) shown = 56000000;
     state.freqHz = static_cast<uint32_t>(shown);
+    pendingFreqSend = true;
     xSemaphoreGive(stateMutex);
 }
 
 void tuneTo(uint32_t hz) {
     xSemaphoreTake(stateMutex, portMAX_DELAY);
-    pendingTuneAbsolute = hz;
-    pendingTuneDelta = 0;
+    if (hz < 500000) hz = 500000;
+    if (hz > 56000000) hz = 56000000;
     state.freqHz = hz;
+    pendingFreqSend = true;
     xSemaphoreGive(stateMutex);
 }
 

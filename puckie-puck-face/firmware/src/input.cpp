@@ -17,18 +17,13 @@
 #include "input.h"
 
 #include <Arduino.h>
-#include "PCF8574.h"
 
+#include "io_expander.h"
 #include "pins.h"
 
 namespace input {
 
 namespace {
-
-/* A second handle to the same expander chip the display module set up.
- * The xreef library talks straight through the shared Wire bus, and both
- * users only touch their own pins, so coexistence is safe. */
-PCF8574 expander(I2C_ADDR_PCF8574);
 
 QueueHandle_t eventQueue;
 
@@ -69,8 +64,10 @@ void inputTask(void *) {
         const uint32_t now = millis();
         if (now - lastButtonPollMs >= 5) {
             lastButtonPollMs = now;
-            /* Low means pressed (the pin idles high via pullup). */
-            const bool pressed = expander.digitalRead(EXP_ENCODER_SW, true) == LOW;
+            /* Low means pressed (the pin idles high via pullup). The
+             * `true` forces a fresh I2C read rather than a cached value. */
+            const bool pressed =
+                io_expander::get().digitalRead(EXP_ENCODER_SW, true) == LOW;
 
             if (pressed && !wasPressed) {
                 /* Press started. */
@@ -113,10 +110,8 @@ void begin() {
     pinMode(PIN_ENCODER_A, INPUT);
     pinMode(PIN_ENCODER_B, INPUT);
 
-    /* begin() here re-attaches to the already-initialized chip; pin modes
-     * were configured by the display module. */
-    expander.pinMode(EXP_ENCODER_SW, INPUT_PULLUP);
-    expander.begin();
+    /* The expander itself was initialized by display::begin() through the
+     * shared io_expander module; nothing to re-init here. */
 
     eventQueue = xQueueCreate(32, sizeof(Event));
     /* Same core as the radio task; both are light. Core 1 stays dedicated

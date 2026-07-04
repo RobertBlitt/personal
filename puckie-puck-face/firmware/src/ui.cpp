@@ -289,9 +289,17 @@ void refreshPota() {
     for (int i = 0; i < POTA_MAX_SPOTS; i++) {
         if (i < p.count) {
             const net::PotaSpot &s = p.spots[i];
-            lv_label_set_text_fmt(lblPotaRows[i], "%s%-10s %7.1fk %s",
+            /* Frequency in kHz with one decimal, using integer math:
+             * LVGL's built-in printf ships with %f support disabled
+             * (LV_SPRINTF_USE_FLOAT is 0 by default), so a float format
+             * here would render nothing. */
+            const uint32_t tenthsKhz = s.freqHz / 100;
+            lv_label_set_text_fmt(lblPotaRows[i], "%s%-10s %lu.%luk %s",
                                   i == potaSelected ? LV_SYMBOL_RIGHT " " : "",
-                                  s.activator, s.freqHz / 1000.0, s.reference);
+                                  s.activator,
+                                  (unsigned long)(tenthsKhz / 10),
+                                  (unsigned long)(tenthsKhz % 10),
+                                  s.reference);
             lv_obj_set_style_text_color(
                 lblPotaRows[i],
                 lv_color_hex(i == potaSelected ? kAccent : kText), 0);

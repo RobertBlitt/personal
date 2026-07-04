@@ -100,12 +100,16 @@ is structured so that choice can wait.
 
 ## Verification status
 
-Honest accounting of what has been tested where:
+Honest accounting of what has been tested where. Run everything below
+yourself with `firmware/test/host/run_tests.sh`; CI runs it on every push.
 
-* Simulator: full unit test suite, all passing, including a live socket
-  round trip.
+* Simulator: 25 unit tests, all passing, including a live socket round
+  trip.
 * Firmware CI-V codec (`civ.cpp`): compiled and unit-tested on a host PC
   against the same byte vectors as the simulator tests. All passing.
+* Integration: the firmware codec talking to the live Python simulator
+  over TCP (identify, tune, mode, band jump, 90-transaction poll burst).
+  All passing.
 * Firmware UI, input, radio client, net modules: syntax-checked against
   the real LVGL 8.3.6 headers. Not yet compiled for the ESP32-S3 target
   (the build sandbox that produced this code could not download the xtensa
@@ -113,5 +117,11 @@ Honest accounting of what has been tested where:
 * Display bring-up (`display.cpp`): direct port of Elecrow's known-good
   vendor demo for this exact panel, unmodified init sequence and timings.
 
+A second review pass audited the one-shot build against the vendor
+library sources and fixed three real bugs before any hardware was flashed:
+a shared-expander init conflict that would have blanked the panel, an
+encoder tuning double-count, and a POTA frequency display that relied on
+float printf support LVGL ships disabled.
+
 Expect the first `pio run` plus first flash to surface something small;
-that is normal for a one-shot port. The bones are verified.
+that is normal. The bones are verified.

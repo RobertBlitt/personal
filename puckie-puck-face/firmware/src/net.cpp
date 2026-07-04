@@ -151,10 +151,19 @@ void refreshPota() {
         strlcpy(s.reference, spot["reference"] | "", sizeof(s.reference));
         strlcpy(s.parkName, spot["name"] | "", sizeof(s.parkName));
         strlcpy(s.modeStr, spot["mode"] | "", sizeof(s.modeStr));
-        /* The API reports frequency in kHz as a string ("14285"); convert
-         * to Hz for consistency with everything else in this project. */
-        const char *khzStr = spot["frequency"] | "0";
-        s.freqHz = static_cast<uint32_t>(atof(khzStr) * 1000.0);
+        /* The API reports frequency in kHz, usually as a string
+         * ("14285.0") but occasionally tooling shifts types, so accept a
+         * bare number too. A `| "0"` default alone would silently turn a
+         * numeric value into 0 Hz. Converted to Hz for consistency with
+         * everything else in this project. */
+        JsonVariantConst freqField = spot["frequency"];
+        double khz = 0.0;
+        if (freqField.is<const char *>()) {
+            khz = atof(freqField.as<const char *>());
+        } else {
+            khz = freqField.as<double>();
+        }
+        s.freqHz = static_cast<uint32_t>(khz * 1000.0);
         fresh.count++;
     }
     fresh.valid = fresh.count > 0;

@@ -21,8 +21,8 @@
 #include <lvgl.h>
 #include <Arduino_GFX_Library.h>
 #include <Adafruit_CST8XX.h>
-#include "PCF8574.h"
 
+#include "io_expander.h"
 #include "pins.h"
 #include "config.h"
 
@@ -33,7 +33,6 @@ namespace {
 constexpr uint16_t kScreenWidth = 480;
 constexpr uint16_t kScreenHeight = 480;
 
-PCF8574 expander(I2C_ADDR_PCF8574);
 Adafruit_CST8XX touch;
 bool touchOk = false;
 
@@ -88,18 +87,14 @@ void touchReadCb(lv_indev_drv_t *, lv_indev_data_t *data) {
 }
 
 void resetPanelViaExpander() {
-    /* Configure the expander lines. Names in pins.h. */
-    expander.pinMode(EXP_TOUCH_RST, OUTPUT);
-    expander.pinMode(EXP_TOUCH_INT, OUTPUT);
-    expander.pinMode(EXP_LCD_POWER, OUTPUT);
-    expander.pinMode(EXP_LCD_RESET, OUTPUT);
-    expander.pinMode(EXP_ENCODER_SW, INPUT_PULLUP);
-
-    if (expander.begin()) {
+    /* One shared expander instance for the whole firmware; see
+     * io_expander.h for why per-module instances would break the panel. */
+    if (io_expander::begin()) {
         Serial.println("[display] PCF8574 expander OK");
     } else {
         Serial.println("[display] PCF8574 expander NOT FOUND, check I2C");
     }
+    PCF8574 &expander = io_expander::get();
 
     /* Power the panel rail, then pulse both reset lines low. The delays
      * are the vendor's; the ST7701S datasheet wants >10 ms post-reset. */
@@ -179,7 +174,7 @@ void begin() {
     setBacklight(BACKLIGHT_DEFAULT);
     /* Vendor demo drops the panel power expander line low after init;
      * mirror that behaviour. */
-    expander.digitalWrite(EXP_LCD_POWER, LOW);
+    io_expander::get().digitalWrite(EXP_LCD_POWER, LOW);
 
     Serial.println("[display] up");
 }
