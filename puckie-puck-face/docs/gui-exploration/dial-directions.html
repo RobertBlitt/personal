@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Puckie dial directions</title>
+  <style>
+    :root { color-scheme: light dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px; background: #f4f5f6; color: #172027; }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    .intro { margin: 0 0 24px; color: #57636d; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(250px, 1fr)); gap: 18px; max-width: 1120px; }
+    .card { padding: 0; overflow: hidden; border: 2px solid #cfd5da; border-radius: 14px; background: #fff; color: #172027; text-align: left; cursor: pointer; }
+    .card:hover, .card:focus-visible { border-color: #35a7ca; outline: none; }
+    .card.selected { border-color: #1482a4; box-shadow: 0 0 0 3px #35c0ed40; }
+    .preview { min-height: 350px; display: grid; place-items: center; padding: 22px; background: #101418; }
+    .copy { padding: 18px; }
+    .copy h2 { margin: 0 0 8px; font-size: 19px; }
+    .copy p { margin: 0; color: #5e6972; line-height: 1.45; }
+    .recommended { display: inline-block; margin-bottom: 9px; padding: 3px 7px; border-radius: 10px; background: #dff5fb; color: #12657e; font-size: 11px; }
+    .puck { position: relative; width: 290px; height: 290px; overflow: hidden; border: 2px solid #3f4a53; border-radius: 50%; background: radial-gradient(circle at 50% 46%, #222a31 0 46%, #101418 72%); color: #e8eaed; box-shadow: inset 0 0 24px #000a; }
+    .coin { position: absolute; border-radius: 50%; background: repeating-conic-gradient(from -1deg, #68737a 0 2deg, #282f34 2deg 4deg); }
+    .coin::after { content: ""; position: absolute; border-radius: 50%; background: linear-gradient(115deg, #343d43 8%, #e0e4e5 28%, #6d777d 48%, #f2f4f4 63%, #343d43 88%); }
+    .instrument-ring { inset: 8px; }
+    .instrument-ring::after { inset: 10px; background: radial-gradient(circle, #101418 0 78%, transparent 79%), linear-gradient(115deg, #4a555e, #d9ddde 43%, #68737a 62%, #edf0f0 72%, #444d54); }
+    .center-knob { width: 100px; height: 100px; left: 95px; top: 132px; box-shadow: 0 10px 20px #0009; }
+    .center-knob::after { inset: 8px; box-shadow: inset 10px 10px 22px #ffffff2e, inset -12px -12px 22px #0009; }
+    .hybrid-ring { inset: 10px; }
+    .hybrid-ring::after { inset: 9px; background: radial-gradient(circle, #101418 0 80%, transparent 81%), linear-gradient(112deg, #394249, #daddde 43%, #626c72 61%, #f0f2f2 73%, #41494f); }
+    .indicator { position: absolute; z-index: 4; top: 41px; left: 143px; width: 3px; height: 15px; border-radius: 2px; background: #35c0ed; }
+    .ui { position: absolute; z-index: 3; inset: 0; text-align: center; pointer-events: none; }
+    .demo { margin-top: 35px; color: #7f8991; font-size: 9px; letter-spacing: .16em; }
+    .mode { margin-top: 13px; font-size: 17px; }
+    .freq { margin-top: 35px; color: #55c7e9; font-size: 29px; font-variant-numeric: tabular-nums; }
+    .step { margin-top: 7px; color: #9ca6ad; font-size: 10px; }
+    .spectrum { position: absolute; right: 72px; bottom: 67px; left: 72px; height: 34px; display: flex; align-items: end; gap: 3px; }
+    .spectrum i { flex: 1; min-width: 2px; border-radius: 1px 1px 0 0; background: #d6a72c; opacity: .86; }
+    .pota { position: absolute; right: 0; bottom: 55px; left: 0; color: #c99b25; font-size: 8px; letter-spacing: .18em; }
+    .center-ui .freq { margin-top: 58px; font-size: 25px; }
+    .center-ui .label { margin-top: 115px; color: #d7dcde; font-size: 12px; }
+    .hint { position: absolute; right: 78px; bottom: 23px; left: 78px; padding: 7px; border: 1px solid #6d777d; border-radius: 16px; background: #1a2025e8; color: #cfd4d6; font-size: 10px; }
+    #selection { margin-top: 20px; min-height: 24px; color: #12657e; font-weight: 600; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #171b1f; color: #eef1f2; }
+      .intro { color: #aab3b9; }
+      .card { background: #22282d; color: #eef1f2; border-color: #48525a; }
+      .copy p { color: #b7c0c6; }
+    }
+    @media (max-width: 940px) { .cards { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>Choose the physical dial direction</h1>
+  <p class="intro">All three use discreet Demo labeling and brushed aluminum with a notched coin edge.</p>
+  <div class="cards" role="group" aria-label="Dial directions">
+    <button class="card" data-name="Instrument ring" type="button">
+      <div class="preview">
+        <div class="puck"><div class="coin instrument-ring"></div><div class="indicator"></div><div class="ui"><div class="demo">DEMO</div><div class="mode">USB-D · 20m</div><div class="freq">14.074.000</div><div class="step">STEP 100 Hz · S5</div><div class="spectrum"><i style="height:20%"></i><i style="height:35%"></i><i style="height:62%"></i><i style="height:91%"></i><i style="height:52%"></i><i style="height:30%"></i><i style="height:48%"></i><i style="height:18%"></i></div><div class="pota">▲ POTA ▲</div></div></div>
+      </div>
+      <div class="copy"><h2>A. Instrument ring</h2><p>Metal stays on the outer tuning ring. This preserves display space and has the smallest rendering cost.</p></div>
+    </button>
+    <button class="card" data-name="Center knob" type="button">
+      <div class="preview">
+        <div class="puck"><div class="coin center-knob"></div><div class="indicator"></div><div class="ui center-ui"><div class="demo">DEMO</div><div class="freq">14.074.000</div><div class="label">TUNING</div><div class="hint">tap knob for full-screen control</div></div></div>
+      </div>
+      <div class="copy"><h2>B. Center knob</h2><p>A literal raised knob dominates the tuner. It looks tactile but competes with frequency readability.</p></div>
+    </button>
+    <button class="card" data-name="Hybrid system" type="button">
+      <div class="preview">
+        <div class="puck"><div class="coin hybrid-ring"></div><div class="indicator"></div><div class="ui"><div class="demo">DEMO</div><div class="mode">USB-D · 20m</div><div class="freq">14.074.000</div><div class="step">STEP 100 Hz · S5</div><div class="spectrum"><i style="height:20%"></i><i style="height:35%"></i><i style="height:62%"></i><i style="height:91%"></i><i style="height:52%"></i><i style="height:30%"></i><i style="height:48%"></i><i style="height:18%"></i></div><div class="hint">tap a dial value for full-screen control</div></div></div>
+      </div>
+      <div class="copy"><span class="recommended">Recommended</span><h2>C. Hybrid system</h2><p>A restrained metal tuning ring on Radio, with a large full-screen dial for gain, power, squelch, volume, and filter.</p></div>
+    </button>
+  </div>
+  <p id="selection" aria-live="polite">No direction selected.</p>
+  <script>
+    const cards = [...document.querySelectorAll('.card')];
+    const selection = document.querySelector('#selection');
+    cards.forEach(card => card.addEventListener('click', () => {
+      cards.forEach(candidate => candidate.classList.remove('selected'));
+      card.classList.add('selected');
+      selection.textContent = `Selected: ${card.dataset.name}`;
+    }));
+  </script>
+</body>
+</html>
