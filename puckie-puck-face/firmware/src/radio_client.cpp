@@ -21,6 +21,7 @@
 
 #include "civ.h"
 #include "config.h"
+#include "radio_profile.h"
 
 namespace radio {
 
@@ -46,19 +47,24 @@ bool pendingFreqSend = false;
 bool pendingModeValid = false;
 uint8_t pendingMode = 0;
 bool pendingDataMode = false;
+uint8_t pendingFilter = 2;
+bool pendingPreampValid = false;
+bool pendingPreamp = false;
+bool pendingAttenuatorValid = false;
+bool pendingAttenuator = false;
+bool pendingAgcValid = false;
+uint8_t pendingAgc = 3;
+bool pendingTunerValid = false;
+uint8_t pendingTunerCommand = 0;
 
 WiFiClient client;
-
-/* The documented mode bytes in a cycling order for cycleMode(). */
-const uint8_t kModeOrder[] = {0x00, 0x01, 0x02, 0x03, 0x05, 0x07};
-constexpr size_t kModeCount = sizeof(kModeOrder);
 
 /* ---- Low-level send/receive ---------------------------------------------- */
 
 /* Send one frame and wait for the radio's reply. Returns true and fills
  * `reply` on success. A false return means timeout or disconnection, and
  * the caller should treat the link as down. */
-bool transact(const civ::Frame &tx, civ::Reply &reply, uint32_t timeoutMs = 400) {
+bool transact(const civ::Frame &tx, civ::Reply &reply, uint32_t timeoutMs = 1000) {
     if (!client.connected()) {
         return false;
     }
@@ -127,6 +133,14 @@ bool flushIntents() {
     uint8_t mode;
     bool dataMode;
     uint8_t filter;
+    bool preampValid;
+    bool preamp;
+    bool attenuatorValid;
+    bool attenuator;
+    bool agcValid;
+    uint8_t agc;
+    bool tunerValid;
+    uint8_t tunerCommand;
 
     xSemaphoreTake(stateMutex, portMAX_DELAY);
     freqSend = pendingFreqSend;
@@ -134,9 +148,21 @@ bool flushIntents() {
     modeValid = pendingModeValid;
     mode = pendingMode;
     dataMode = pendingDataMode;
-    filter = state.filter;
+    filter = pendingFilter;
+    preampValid = pendingPreampValid;
+    preamp = pendingPreamp;
+    attenuatorValid = pendingAttenuatorValid;
+    attenuator = pendingAttenuator;
+    agcValid = pendingAgcValid;
+    agc = pendingAgc;
+    tunerValid = pendingTunerValid;
+    tunerCommand = pendingTunerCommand;
     pendingFreqSend = false;
     pendingModeValid = false;
+    pendingPreampValid = false;
+    pendingAttenuatorValid = false;
+    pendingAgcValid = false;
+    pendingTunerValid = false;
     xSemaphoreGive(stateMutex);
 
     if (freqSend) {
@@ -168,6 +194,31 @@ bool flushIntents() {
         xSemaphoreGive(stateMutex);
     }
 
+    if (preampValid) {
+        civ::Reply reply;
+        if (!transact(civ::makeSetFunction(0x02, preamp ? 1 : 0), reply)) {
+            return false;
+        }
+    }
+    if (attenuatorValid) {
+        civ::Reply reply;
+        if (!transact(civ::makeSetAttenuator(attenuator), reply)) {
+            return false;
+        }
+    }
+    if (agcValid) {
+        civ::Reply reply;
+        if (!transact(civ::makeSetFunction(0x12, agc), reply)) {
+            return false;
+        }
+    }
+    if (tunerValid) {
+        civ::Reply reply;
+        if (!transact(civ::makeSetTuner(tunerCommand), reply)) {
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -177,6 +228,7 @@ void radioTask(void *) {
     /* Round-robin poll schedule. The S-meter changes fastest but matters
      * least when it is a beat late, so an even rotation is fine. */
     int pollPhase = 0;
+    int controlPollPhase = 0;
     uint32_t reconnectBackoffMs = 500;
 
     for (;;) {
@@ -238,6 +290,77 @@ void radioTask(void *) {
         }
         pollPhase = (pollPhase + 1) % 3;
 
+        /* One lower-rate control/meter query per cycle. These values each
+         * refresh about every 3.5 seconds without slowing the core VFO poll. */
+        civ::Reply controlReply;
+        bool controlOk = false;
+        switch (controlPollPhase) {
+            case 0:
+                controlOk = transact(civ::makeReadAttenuator(), controlReply) &&
+                            controlReply.kind == civ::Reply::Kind::Attenuator;
+                if (controlOk) {
+                    xSemaphoreTake(stateMutex, portMAX_DELAY);
+                    state.attenuator = controlReply.value != 0;
+                    xSemaphoreGive(stateMutex);
+                }
+                break;
+            case 1:
+                controlOk = transact(civ::makeReadFunction(0x02), controlReply) &&
+                            controlReply.kind == civ::Reply::Kind::Function;
+                if (controlOk) {
+                    xSemaphoreTake(stateMutex, portMAX_DELAY);
+                    state.preamp = controlReply.value != 0;
+                    xSemaphoreGive(stateMutex);
+                }
+                break;
+            case 2:
+                controlOk = transact(civ::makeReadFunction(0x12), controlReply) &&
+                            controlReply.kind == civ::Reply::Kind::Function;
+                if (controlOk) {
+                    xSemaphoreTake(stateMutex, portMAX_DELAY);
+                    state.agc = controlReply.value;
+                    xSemaphoreGive(stateMutex);
+                }
+                break;
+            case 3:
+                controlOk = transact(civ::makeReadTuner(), controlReply) &&
+                            controlReply.kind == civ::Reply::Kind::Tuner;
+                if (controlOk) {
+                    xSemaphoreTake(stateMutex, portMAX_DELAY);
+                    state.tuner = controlReply.value != 0;
+                    xSemaphoreGive(stateMutex);
+                }
+                break;
+            case 4:
+                controlOk = transact(civ::makeReadMeter(0x11), controlReply) &&
+                            controlReply.kind == civ::Reply::Kind::Meter;
+                if (controlOk) {
+                    xSemaphoreTake(stateMutex, portMAX_DELAY);
+                    state.rfMeter = controlReply.level;
+                    xSemaphoreGive(stateMutex);
+                }
+                break;
+            case 5:
+                controlOk = transact(civ::makeReadMeter(0x12), controlReply) &&
+                            controlReply.kind == civ::Reply::Kind::Meter;
+                if (controlOk) {
+                    xSemaphoreTake(stateMutex, portMAX_DELAY);
+                    state.swrMeter = controlReply.level;
+                    xSemaphoreGive(stateMutex);
+                }
+                break;
+            case 6:
+                controlOk = transact(civ::makeReadMeter(0x15), controlReply) &&
+                            controlReply.kind == civ::Reply::Kind::Meter;
+                if (controlOk) {
+                    xSemaphoreTake(stateMutex, portMAX_DELAY);
+                    state.voltageMeter = controlReply.level;
+                    xSemaphoreGive(stateMutex);
+                }
+                break;
+        }
+        controlPollPhase = (controlPollPhase + 1) % 7;
+
         if (ok) {
             xSemaphoreTake(stateMutex, portMAX_DELAY);
             state.linkUp = true;
@@ -257,7 +380,13 @@ void radioTask(void *) {
 /* ---- Public API ----------------------------------------------------------- */
 
 void begin() {
+    const profile::RadioProfile &p = profile::active();
+    civ::setAddresses(p.civAddress, p.controllerAddress);
+
     stateMutex = xSemaphoreCreateMutex();
+    state.mode = p.defaultMode;
+    state.filter = p.defaultFilter;
+    pendingFilter = p.defaultFilter;
     /* Core 0 keeps radio and network chatter away from core 1, where the
      * Arduino loop() runs LVGL rendering. 4 KB of stack is comfortable for
      * a task that only shuffles small buffers. */
@@ -295,10 +424,16 @@ void tuneTo(uint32_t hz) {
 }
 
 void requestMode(uint8_t mode, bool dataMode) {
+    Snapshot s = snapshot();
+    requestModeFilter(mode, dataMode, s.filter);
+}
+
+void requestModeFilter(uint8_t mode, bool dataMode, uint8_t filter) {
     xSemaphoreTake(stateMutex, portMAX_DELAY);
     pendingModeValid = true;
     pendingMode = mode;
     pendingDataMode = dataMode;
+    pendingFilter = filter < 1 ? 1 : (filter > 3 ? 3 : filter);
     xSemaphoreGive(stateMutex);
 }
 
@@ -307,16 +442,48 @@ void cycleMode(bool forward) {
     uint8_t current = state.mode;
     xSemaphoreGive(stateMutex);
 
-    /* Find the current mode in the cycle order, then step. */
-    size_t idx = 0;
-    for (size_t i = 0; i < kModeCount; i++) {
-        if (kModeOrder[i] == current) {
-            idx = i;
-            break;
-        }
-    }
-    idx = (idx + (forward ? 1 : kModeCount - 1)) % kModeCount;
-    requestMode(kModeOrder[idx], false);
+    requestMode(profile::nextMode(current, forward), false);
+}
+
+void setPreamp(bool enabled) {
+    xSemaphoreTake(stateMutex, portMAX_DELAY);
+    state.preamp = enabled;
+    pendingPreamp = enabled;
+    pendingPreampValid = true;
+    xSemaphoreGive(stateMutex);
+}
+
+void setAttenuator(bool enabled) {
+    xSemaphoreTake(stateMutex, portMAX_DELAY);
+    state.attenuator = enabled;
+    pendingAttenuator = enabled;
+    pendingAttenuatorValid = true;
+    xSemaphoreGive(stateMutex);
+}
+
+void setAgc(uint8_t mode) {
+    if (mode > 3) mode = 3;
+    xSemaphoreTake(stateMutex, portMAX_DELAY);
+    state.agc = mode;
+    pendingAgc = mode;
+    pendingAgcValid = true;
+    xSemaphoreGive(stateMutex);
+}
+
+void setTuner(bool enabled) {
+    xSemaphoreTake(stateMutex, portMAX_DELAY);
+    state.tuner = enabled;
+    pendingTunerCommand = enabled ? 1 : 0;
+    pendingTunerValid = true;
+    xSemaphoreGive(stateMutex);
+}
+
+void startTune() {
+    xSemaphoreTake(stateMutex, portMAX_DELAY);
+    state.tuner = true;
+    pendingTunerCommand = 2;
+    pendingTunerValid = true;
+    xSemaphoreGive(stateMutex);
 }
 
 } // namespace radio

@@ -46,6 +46,13 @@ struct PotaData {
     PotaSpot spots[POTA_MAX_SPOTS];
 };
 
+struct Status {
+    bool wifiUp = false;
+    char ssid[33] = "";
+    char ip[16] = "";
+    int32_t rssi = 0;
+};
+
 /* Kick off WiFi association and start the background fetch task. */
 void begin();
 
@@ -58,5 +65,8 @@ bool timeSynced();
 /* Copy out the latest feed data (thread safe). */
 SolarData solar();
 PotaData pota();
+
+/* Current WiFi details for the status screen. */
+Status status();
 
 } // namespace net

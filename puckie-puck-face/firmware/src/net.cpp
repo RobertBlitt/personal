@@ -256,4 +256,17 @@ PotaData pota() {
     return copy;
 }
 
+Status status() {
+    Status s;
+    s.wifiUp = WiFi.status() == WL_CONNECTED;
+    strlcpy(s.ssid, WIFI_SSID, sizeof(s.ssid));
+    if (s.wifiUp) {
+        strlcpy(s.ip, WiFi.localIP().toString().c_str(), sizeof(s.ip));
+        s.rssi = WiFi.RSSI();
+    } else {
+        strlcpy(s.ip, "not connected", sizeof(s.ip));
+    }
+    return s;
+}
+
 } // namespace net

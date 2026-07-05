@@ -63,6 +63,18 @@ int main() {
     const uint8_t sm[] = {0xFE, 0xFE, 0xA4, 0x00, 0x26, 0x00, 0x03, 0x00, 0x01, 0xFD};
     CHECK(f.len == sizeof(sm) && memcmp(f.data, sm, f.len) == 0);
 
+    f = makeSetAttenuator(true);
+    const uint8_t att[] = {0xFE, 0xFE, 0xA4, 0x00, 0x11, 0x01, 0xFD};
+    CHECK(f.len == sizeof(att) && memcmp(f.data, att, f.len) == 0);
+
+    f = makeSetFunction(0x12, 0x03); // AGC auto
+    const uint8_t agc[] = {0xFE, 0xFE, 0xA4, 0x00, 0x16, 0x12, 0x03, 0xFD};
+    CHECK(f.len == sizeof(agc) && memcmp(f.data, agc, f.len) == 0);
+
+    f = makeSetTuner(0x02); // start tune
+    const uint8_t tune[] = {0xFE, 0xFE, 0xA4, 0x00, 0x1C, 0x01, 0x02, 0xFD};
+    CHECK(f.len == sizeof(tune) && memcmp(f.data, tune, f.len) == 0);
+
     // Parser: feed the doc's example reply byte by byte.
     // FE FE 00 A4 03 60 23 00 21 00 FD
     {
@@ -75,6 +87,17 @@ int main() {
         Reply r;
         CHECK(parseReply(p.body(), p.bodyLen(), r));
         CHECK(r.kind == Reply::Kind::Frequency && r.freqHz == 21002360);
+    }
+
+    // SWR meter and tuner state reply parsing.
+    {
+        Reply r;
+        const uint8_t swr[] = {0x00, 0xA4, 0x15, 0x12, 0x00, 0x42};
+        CHECK(parseReply(swr, sizeof(swr), r));
+        CHECK(r.kind == Reply::Kind::Meter && r.sub == 0x12 && r.level == 42);
+        const uint8_t tuner[] = {0x00, 0xA4, 0x1C, 0x01, 0x01};
+        CHECK(parseReply(tuner, sizeof(tuner), r));
+        CHECK(r.kind == Reply::Kind::Tuner && r.value == 1);
     }
 
     // Parser: leading noise, then an OK ack, then an S-meter reading in

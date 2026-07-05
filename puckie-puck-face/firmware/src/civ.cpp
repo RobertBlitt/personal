@@ -9,6 +9,26 @@
 
 namespace civ {
 
+namespace {
+
+uint8_t activeRadioAddress = ADDR_RADIO;
+uint8_t activeControllerAddress = ADDR_CONTROLLER;
+
+} // namespace
+
+void setAddresses(uint8_t radioAddress, uint8_t controllerAddress) {
+    activeRadioAddress = radioAddress;
+    activeControllerAddress = controllerAddress;
+}
+
+uint8_t radioAddress() {
+    return activeRadioAddress;
+}
+
+uint8_t controllerAddress() {
+    return activeControllerAddress;
+}
+
 const char *modeName(uint8_t mode) {
     switch (static_cast<Mode>(mode)) {
         case Mode::LSB: return "LSB";
@@ -76,13 +96,13 @@ bool bcdToLevel(const uint8_t in[2], uint8_t &valueOut) {
 
 /* ---- Frame builders ------------------------------------------------------ */
 
-/* Start every outbound frame the same way: FE FE A4 00. */
+/* Start every outbound frame the same way: FE FE <radio> <controller>. */
 static Frame frameStart() {
     Frame f;
     f.data[0] = PREAMBLE;
     f.data[1] = PREAMBLE;
-    f.data[2] = ADDR_RADIO;      /* destination: the radio */
-    f.data[3] = ADDR_CONTROLLER; /* source: us */
+    f.data[2] = radioAddress();      /* destination: the radio */
+    f.data[3] = controllerAddress(); /* source: us */
     f.len = 4;
     return f;
 }
@@ -144,6 +164,63 @@ Frame makeReadSMeter() {
     return f;
 }
 
+Frame makeReadMeter(uint8_t meter) {
+    Frame f = frameStart();
+    push(f, 0x15);
+    push(f, meter);
+    finish(f);
+    return f;
+}
+
+Frame makeReadAttenuator() {
+    Frame f = frameStart();
+    push(f, 0x11);
+    finish(f);
+    return f;
+}
+
+Frame makeSetAttenuator(bool enabled) {
+    Frame f = frameStart();
+    push(f, 0x11);
+    push(f, enabled ? 0x01 : 0x00);
+    finish(f);
+    return f;
+}
+
+Frame makeReadFunction(uint8_t function) {
+    Frame f = frameStart();
+    push(f, 0x16);
+    push(f, function);
+    finish(f);
+    return f;
+}
+
+Frame makeSetFunction(uint8_t function, uint8_t value) {
+    Frame f = frameStart();
+    push(f, 0x16);
+    push(f, function);
+    push(f, value);
+    finish(f);
+    return f;
+}
+
+Frame makeReadTuner() {
+    Frame f = frameStart();
+    push(f, 0x1C);
+    push(f, 0x01);
+    finish(f);
+    return f;
+}
+
+Frame makeSetTuner(uint8_t command) {
+    Frame f = frameStart();
+    push(f, 0x1C);
+    push(f, 0x01);
+    push(f, command);
+    finish(f);
+    return f;
+}
+
 Frame makeSetBand(uint8_t bandRegister) {
     Frame f = frameStart();
     push(f, 0x1A);
@@ -186,8 +263,8 @@ bool FrameParser::feed(uint8_t byte) {
         preambles_ = 0;
         /* Need at least dest + src + cmd, and it must be addressed to us.
          * (On a shared CI-V bus we would also see our own transmissions
-         * echoed back; those have dest == ADDR_RADIO and are dropped.) */
-        return len_ >= 3 && buf_[0] == ADDR_CONTROLLER;
+         * echoed back; those have dest == radioAddress() and are dropped.) */
+        return len_ >= 3 && buf_[0] == controllerAddress();
     }
 
     if (byte == PREAMBLE && len_ == 0) {
@@ -211,7 +288,7 @@ bool FrameParser::feed(uint8_t byte) {
 
 bool parseReply(const uint8_t *body, size_t len, Reply &out) {
     /* body layout: [0]=dest [1]=src [2]=cmd [3...]=sub/data */
-    if (len < 3 || body[0] != ADDR_CONTROLLER || body[1] != ADDR_RADIO) {
+    if (len < 3 || body[0] != controllerAddress() || body[1] != radioAddress()) {
         return false;
     }
     const uint8_t cmd = body[2];
@@ -251,10 +328,38 @@ bool parseReply(const uint8_t *body, size_t len, Reply &out) {
             }
             return false;
 
-        case 0x15: /* sub 0x02 is the S-meter; 2 BCD bytes follow */
-            if (payloadLen >= 3 && payload[0] == 0x02 &&
-                bcdToLevel(payload + 1, out.level)) {
-                out.kind = Reply::Kind::SMeter;
+        case 0x15: /* meters: sub-command then a 2-byte BCD level */
+            if (payloadLen >= 3 && bcdToLevel(payload + 1, out.level)) {
+                out.sub = payload[0];
+                out.kind = payload[0] == 0x02
+                               ? Reply::Kind::SMeter
+                               : Reply::Kind::Meter;
+                return true;
+            }
+            return false;
+
+        case 0x11:
+            if (payloadLen >= 1) {
+                out.value = payload[0];
+                out.kind = Reply::Kind::Attenuator;
+                return true;
+            }
+            return false;
+
+        case 0x16:
+            if (payloadLen >= 2) {
+                out.sub = payload[0];
+                out.value = payload[1];
+                out.kind = Reply::Kind::Function;
+                return true;
+            }
+            return false;
+
+        case 0x1C:
+            if (payloadLen >= 2 && payload[0] == 0x01) {
+                out.sub = payload[0];
+                out.value = payload[1];
+                out.kind = Reply::Kind::Tuner;
                 return true;
             }
             return false;
