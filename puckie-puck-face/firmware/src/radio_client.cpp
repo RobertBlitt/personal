@@ -185,36 +185,54 @@ bool flushIntents() {
             pendingModeValid = true;
             pendingMode = mode;
             pendingDataMode = dataMode;
+            pendingFilter = filter;
             xSemaphoreGive(stateMutex);
             return false;
         }
         xSemaphoreTake(stateMutex, portMAX_DELAY);
         state.mode = mode;
         state.dataMode = dataMode;
+        state.filter = filter;
         xSemaphoreGive(stateMutex);
     }
 
     if (preampValid) {
         civ::Reply reply;
         if (!transact(civ::makeSetFunction(0x02, preamp ? 1 : 0), reply)) {
+            xSemaphoreTake(stateMutex, portMAX_DELAY);
+            pendingPreampValid = true;
+            pendingPreamp = preamp;
+            xSemaphoreGive(stateMutex);
             return false;
         }
     }
     if (attenuatorValid) {
         civ::Reply reply;
         if (!transact(civ::makeSetAttenuator(attenuator), reply)) {
+            xSemaphoreTake(stateMutex, portMAX_DELAY);
+            pendingAttenuatorValid = true;
+            pendingAttenuator = attenuator;
+            xSemaphoreGive(stateMutex);
             return false;
         }
     }
     if (agcValid) {
         civ::Reply reply;
         if (!transact(civ::makeSetFunction(0x12, agc), reply)) {
+            xSemaphoreTake(stateMutex, portMAX_DELAY);
+            pendingAgcValid = true;
+            pendingAgc = agc;
+            xSemaphoreGive(stateMutex);
             return false;
         }
     }
     if (tunerValid) {
         civ::Reply reply;
         if (!transact(civ::makeSetTuner(tunerCommand), reply)) {
+            xSemaphoreTake(stateMutex, portMAX_DELAY);
+            pendingTunerValid = true;
+            pendingTunerCommand = tunerCommand;
+            xSemaphoreGive(stateMutex);
             return false;
         }
     }
@@ -361,7 +379,7 @@ void radioTask(void *) {
         }
         controlPollPhase = (controlPollPhase + 1) % 7;
 
-        if (ok) {
+        if (ok && controlOk) {
             xSemaphoreTake(stateMutex, portMAX_DELAY);
             state.linkUp = true;
             lastGoodPollMs = millis();

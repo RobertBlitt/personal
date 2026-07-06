@@ -60,8 +60,7 @@ Snapshot snapshot();
  * spinning the knob fast sends a handful of frames, not hundreds. */
 void tuneBy(int32_t deltaHz);
 
-/* Jump straight to a frequency in Hz (used by the POTA screen's
- * "tune to this spot" action). */
+/* Jump straight to a frequency in Hz. */
 void tuneTo(uint32_t hz);
 
 /* Ask for a specific mode (CI-V mode byte plus the data flag). */

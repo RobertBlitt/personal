@@ -162,7 +162,8 @@ Future PCB haptics:
 - Commands derive from Radioddity's X6200 CI-V document for firmware 1.0.6 but
   remain unverified on physical hardware.
 - Meter values stay raw until RF/SWR/voltage calibration is verified.
-- POTA fetch code remains, but POTA is no longer a primary UI screen.
+- POTA screen/feed code was removed after PR #3 review; bring it back as a
+  new screen later if it becomes useful again.
 - PSK Reporter is deferred until core radio workflows are proven.
 
 ## Verification

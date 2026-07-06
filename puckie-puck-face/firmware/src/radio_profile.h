@@ -54,5 +54,6 @@ const RadioProfile &active();
 const char *modeName(uint8_t mode);
 uint8_t nextMode(uint8_t current, bool forward);
 int bandIndexForFrequency(uint32_t hz);
+const char *bandNameForFrequency(uint32_t hz);
 
 } // namespace profile

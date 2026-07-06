@@ -54,14 +54,9 @@
 /* ---- Data feeds -------------------------------------------------------------- */
 /* N0NBH solar and band conditions XML (the widget seen on QRZ pages). */
 #define HAMQSL_URL "https://www.hamqsl.com/solarxml.php"
-/* Parks On The Air active spots. */
-#define POTA_URL "https://api.pota.app/spot/activator"
-/* Refresh cadence for both feeds. hamqsl asks bots to poll no more than
- * once every 30 minutes; POTA spots turn over quickly. Milliseconds. */
+/* Refresh cadence. hamqsl asks bots to poll no more than once every 30
+ * minutes. Milliseconds. */
 #define HAMQSL_REFRESH_MS (30UL * 60UL * 1000UL)
-#define POTA_REFRESH_MS (2UL * 60UL * 1000UL)
-/* How many POTA spots to keep and show. */
-#define POTA_MAX_SPOTS 8
 
 /* ---- Tuning behaviour ------------------------------------------------------------ */
 /* Frequency steps the encoder button cycles through, in Hz. */

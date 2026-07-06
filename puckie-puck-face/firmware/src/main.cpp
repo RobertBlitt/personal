@@ -11,7 +11,7 @@
  *
  *   display  panel + touch bring-up, LVGL registration   (no task)
  *   input    encoder and button decoding                 (task, core 0)
- *   net      WiFi, NTP, hamqsl and POTA feeds            (task, core 0)
+ *   net      WiFi, NTP, and hamqsl feed                  (task, core 0)
  *   radio    CI-V over TCP to the radio or simulator     (task, core 0)
  *   ui       LVGL screens, consumes everything above    (loop, core 1)
  *

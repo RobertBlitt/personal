@@ -93,4 +93,13 @@ int bandIndexForFrequency(uint32_t hz) {
     return -1;
 }
 
+const char *bandNameForFrequency(uint32_t hz) {
+    const int index = bandIndexForFrequency(hz);
+    if (index < 0) {
+        return "GEN";
+    }
+    const RadioProfile &p = active();
+    return p.bands[index].name;
+}
+
 } // namespace profile

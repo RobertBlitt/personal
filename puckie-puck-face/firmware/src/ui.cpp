@@ -80,6 +80,7 @@ const char *const kModeNames[kModeCount] = {
 /* Radio screen */
 constexpr int kRadioMiniScopeBars = 29;
 constexpr int kTuningTickCount = 81;
+int lastActiveTuningTick = -1;
 lv_obj_t *lblFreq;
 lv_obj_t *lblMode;
 lv_obj_t *lblStep;
@@ -108,7 +109,7 @@ bool bandLastDataMode[kMaxProfileBands];
 
 /* Grayline screen */
 lv_obj_t *grayCanvas;
-uint8_t grayCanvasBuf[sizeof(lv_color32_t) * 256 + LAND_MASK_W * LAND_MASK_H];
+uint8_t *grayCanvasBuf = nullptr;
 lv_obj_t *lblGrayUtc;
 lv_obj_t *lblGrayLocal;
 lv_obj_t *lblGraySun;
@@ -261,21 +262,6 @@ void formatFreq(uint32_t hz, char *out, size_t outSize) {
              (unsigned long)mhz, (unsigned long)khz, (unsigned long)rest);
 }
 
-const char *bandNameForFreq(uint32_t hz) {
-    if (hz >= 1800000 && hz <= 2000000) return "160m";
-    if (hz >= 3500000 && hz <= 4000000) return "80m";
-    if (hz >= 5330000 && hz <= 5407000) return "60m";
-    if (hz >= 7000000 && hz <= 7300000) return "40m";
-    if (hz >= 10100000 && hz <= 10150000) return "30m";
-    if (hz >= 14000000 && hz <= 14350000) return "20m";
-    if (hz >= 18068000 && hz <= 18168000) return "17m";
-    if (hz >= 21000000 && hz <= 21450000) return "15m";
-    if (hz >= 24890000 && hz <= 24990000) return "12m";
-    if (hz >= 28000000 && hz <= 29700000) return "10m";
-    if (hz >= 50000000 && hz <= 54000000) return "6m";
-    return "GEN";
-}
-
 uint32_t levelColor(uint8_t level) {
     if (level < 75) return kAccent;
     if (level < 155) return kGood;
@@ -289,6 +275,19 @@ uint32_t ratingColor(const char *rating) {
     if (strcasecmp(rating, "Fair") == 0) return kWarn;
     if (strcasecmp(rating, "Poor") == 0) return kBad;
     return kDim;
+}
+
+void styleTuningTick(int index, bool active) {
+    if (index < 0 || index >= kTuningTickCount) {
+        return;
+    }
+    const bool major = (index % 10) == 0;
+    const bool medium = !major && (index % 5) == 0;
+    lv_obj_set_style_line_color(
+        tuningTicks[index],
+        lv_color_hex(active ? kAccent : major ? kDialTickMajor : kDialTick), 0);
+    lv_obj_set_style_line_width(tuningTicks[index],
+                                active ? 3 : major ? 2 : medium ? 2 : 1, 0);
 }
 
 /* ---- Screen builders ------------------------------------------------------ */
@@ -544,6 +543,14 @@ void buildGraylineScreen() {
     lblGrayLocal = makeLabel(scr, &lv_font_montserrat_16, kDim, "local --:--");
     lv_obj_align(lblGrayLocal, LV_ALIGN_TOP_MID, 0, 118);
 
+    const size_t grayCanvasBufSize =
+        sizeof(lv_color32_t) * 256 + LAND_MASK_W * LAND_MASK_H;
+    grayCanvasBuf = static_cast<uint8_t *>(
+        heap_caps_malloc(grayCanvasBufSize, MALLOC_CAP_SPIRAM));
+    if (!grayCanvasBuf) {
+        Serial.println("[ui] grayline PSRAM allocation failed");
+        return;
+    }
     grayCanvas = lv_canvas_create(scr);
     lv_canvas_set_buffer(grayCanvas, grayCanvasBuf, LAND_MASK_W, LAND_MASK_H,
                          LV_IMG_CF_INDEXED_8BIT);
@@ -582,7 +589,7 @@ void refreshRadio() {
         lv_label_set_text(lblFreq, buf);
         lv_label_set_text_fmt(lblMode, "%s%s", profile::modeName(s.mode),
                               s.dataMode ? "-D" : "");
-        lv_label_set_text(lblBand, bandNameForFreq(s.freqHz));
+        lv_label_set_text(lblBand, profile::bandNameForFrequency(s.freqHz));
         lv_obj_set_style_text_color(lblLink, lv_color_hex(kGood), 0);
         lv_label_set_text(lblLink, LV_SYMBOL_WIFI " linked");
         const int band = profile::bandIndexForFrequency(s.freqHz);
@@ -600,15 +607,13 @@ void refreshRadio() {
     const uint32_t tuningPosition =
         s.linkUp ? (s.freqHz / kTuneSteps[tuneStepIndex]) % kTuningTickCount
                  : kTuningTickCount;
-    for (int i = 0; i < kTuningTickCount; i++) {
-        const bool major = (i % 10) == 0;
-        const bool medium = !major && (i % 5) == 0;
-        const bool active = static_cast<uint32_t>(i) == tuningPosition;
-        lv_obj_set_style_line_color(
-            tuningTicks[i],
-            lv_color_hex(active ? kAccent : major ? kDialTickMajor : kDialTick), 0);
-        lv_obj_set_style_line_width(tuningTicks[i],
-                                    active ? 3 : major ? 2 : medium ? 2 : 1, 0);
+    const int activeTick = tuningPosition < kTuningTickCount
+                               ? static_cast<int>(tuningPosition)
+                               : -1;
+    if (activeTick != lastActiveTuningTick) {
+        styleTuningTick(lastActiveTuningTick, false);
+        styleTuningTick(activeTick, true);
+        lastActiveTuningTick = activeTick;
     }
     /* Rough S-unit mapping for the label: the doc only promises 0-255 as
      * 0-100%, so display S1..S9+ proportionally rather than pretending to
@@ -768,6 +773,9 @@ void refreshBandSelect() {
 }
 
 void refreshGrayline() {
+    if (!grayCanvasBuf || !grayCanvas) {
+        return;
+    }
     if (!net::timeSynced()) {
         return;
     }

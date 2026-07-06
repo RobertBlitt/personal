@@ -52,10 +52,10 @@ main.cpp          setup() wires modules together; loop() runs LVGL
  |
  +-- display.*    panel + touch bring-up (vendor-derived), LVGL glue
  +-- input.*      encoder + button -> event queue        [task, core 0]
- +-- net.*        WiFi, NTP, hamqsl + POTA fetchers      [task, core 0]
+ +-- net.*        WiFi, NTP, hamqsl solar fetcher        [task, core 0]
  +-- radio_client.*  CI-V over TCP, polling, intents     [task, core 0]
  +-- civ.*        pure CI-V codec, no I/O, host-testable
- +-- ui.*         four LVGL screens, consumes everything [loop, core 1]
+ +-- ui.*         LVGL screens, consumes everything      [loop, core 1]
 ```
 
 Threading rule: only the `loop()` thread touches LVGL. Background tasks
@@ -100,4 +100,4 @@ co-processor, and so on), then persist the result in NVS flash.
   2025-06-20 PDF. The only authority used for opcodes.
 * Elecrow CrowPanel 2.1inch-HMI vendor repo (pin map, init sequence,
   library versions).
-* N0NBH solar XML feed, hamqsl.com. POTA API, api.pota.app.
+* N0NBH solar XML feed, hamqsl.com.

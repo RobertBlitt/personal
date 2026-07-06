@@ -10,10 +10,16 @@ point). Python 3.8+, standard library only.
 python3 x6200_sim.py                     # 0.0.0.0:7373
 python3 x6200_sim.py --verbose           # hex-dump every frame
 python3 x6200_sim.py --freq 7074000 --mode LSB
+python3 x6200_sim.py --single-client-per-ip --idle-timeout 15
 ```
 
 The S-meter wanders on its own and random "stations" key up now and then,
 so the knob UI has something alive to display.
+
+`--single-client-per-ip` and `--idle-timeout` are simulator-only test
+conveniences for stale local sockets. They are disabled by default so manual
+`nc`/debug sessions can coexist with firmware sessions, and they are not a
+substitute for firmware-side reconnect handling against real hardware.
 
 ## Test
 

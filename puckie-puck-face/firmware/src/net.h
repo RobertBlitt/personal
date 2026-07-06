@@ -1,5 +1,5 @@
 /**
- * net.h: WiFi, clock sync, and the two dashboard data feeds.
+ * net.h: WiFi, clock sync, and the dashboard data feed.
  *
  * Like radio_client, everything slow happens in a background task and the
  * UI only ever copies out plain structs under a mutex. HTTP fetches can
@@ -31,21 +31,6 @@ struct SolarData {
 /* The four band-group labels hamqsl reports, in display order. */
 extern const char *const kBandNames[4];
 
-/* One Parks On The Air spot. */
-struct PotaSpot {
-    char activator[16] = "";  /* callsign */
-    char reference[12] = "";  /* park id, e.g. "US-0022" */
-    char parkName[36] = "";
-    char modeStr[8] = "";
-    uint32_t freqHz = 0;
-};
-
-struct PotaData {
-    bool valid = false;
-    int count = 0;
-    PotaSpot spots[POTA_MAX_SPOTS];
-};
-
 struct Status {
     bool wifiUp = false;
     char ssid[33] = "";
@@ -64,7 +49,6 @@ bool timeSynced();
 
 /* Copy out the latest feed data (thread safe). */
 SolarData solar();
-PotaData pota();
 
 /* Current WiFi details for the status screen. */
 Status status();
