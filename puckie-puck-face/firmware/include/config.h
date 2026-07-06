@@ -8,24 +8,36 @@
 
 #pragma once
 
+/* Personal network/radio settings belong in config_local.h, which is ignored
+ * by git. Copy the defines below into that file to override shared defaults. */
+#if __has_include("config_local.h")
+#include "config_local.h"
+#endif
+
 /* ---- WiFi ---------------------------------------------------------------- */
 /* 2.4 GHz networks only; the ESP32-S3 has no 5 GHz radio. */
+#ifndef WIFI_SSID
 #define WIFI_SSID "your-network-name"
+#endif
+#ifndef WIFI_PASSWORD
 #define WIFI_PASSWORD "your-network-password"
+#endif
 
 /* ---- Radio endpoint ------------------------------------------------------- */
 /* Where CI-V frames go. Today: the machine running simulator/x6200_sim.py.
  * Later: a Raspberry Pi bridging TCP to the real radio's USB CAT port, or
  * a rooted X6200 itself. The firmware cannot tell the difference, which is
  * the whole point of the design. */
+#ifndef RADIO_HOST
 #define RADIO_HOST "192.168.1.100"
+#endif
 #define RADIO_PORT 7373
 
 /* How often the radio poller refreshes state, in milliseconds. Each cycle
  * reads one of: frequency, mode, S-meter (staggered round-robin), so the
- * S-meter updates every 3rd cycle. 150 ms keeps the meter lively without
- * hammering the link. */
-#define RADIO_POLL_INTERVAL_MS 150
+ * S-meter updates every 3rd cycle. 500 ms is still responsive, but gives
+ * home WiFi and the Mac simulator plenty of breathing room. */
+#define RADIO_POLL_INTERVAL_MS 500
 
 /* ---- Station data ---------------------------------------------------------- */
 /* Maidenhead grid square shown on the clock screen. BL01 covers Honolulu;
@@ -42,14 +54,9 @@
 /* ---- Data feeds -------------------------------------------------------------- */
 /* N0NBH solar and band conditions XML (the widget seen on QRZ pages). */
 #define HAMQSL_URL "https://www.hamqsl.com/solarxml.php"
-/* Parks On The Air active spots. */
-#define POTA_URL "https://api.pota.app/spot/activator"
-/* Refresh cadence for both feeds. hamqsl asks bots to poll no more than
- * once every 30 minutes; POTA spots turn over quickly. Milliseconds. */
+/* Refresh cadence. hamqsl asks bots to poll no more than once every 30
+ * minutes. Milliseconds. */
 #define HAMQSL_REFRESH_MS (30UL * 60UL * 1000UL)
-#define POTA_REFRESH_MS (2UL * 60UL * 1000UL)
-/* How many POTA spots to keep and show. */
-#define POTA_MAX_SPOTS 8
 
 /* ---- Tuning behaviour ------------------------------------------------------------ */
 /* Frequency steps the encoder button cycles through, in Hz. */

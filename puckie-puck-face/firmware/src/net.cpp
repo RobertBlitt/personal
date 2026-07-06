@@ -1,5 +1,5 @@
 /**
- * net.cpp: WiFi bring-up, NTP, and the hamqsl + POTA fetchers.
+ * net.cpp: WiFi bring-up, NTP, and the hamqsl solar fetcher.
  *
  * A NOTE ON THE XML "PARSER". The N0NBH feed is small and its structure
  * has been stable for many years, so instead of dragging in an XML
@@ -7,7 +7,7 @@
  * it needs. If the feed ever changes shape the worst case is empty
  * strings on the dashboard, not a crash.
  *
- * A NOTE ON TLS. Both feeds are fetched over HTTPS with certificate
+ * A NOTE ON TLS. The feed is fetched over HTTPS with certificate
  * verification disabled (setInsecure). That is a deliberate tradeoff for
  * a hobby dashboard: pinning CA certificates on a microcontroller means
  * shipping updates when the sites rotate certs. Nothing secret travels on
@@ -20,7 +20,6 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-#include <ArduinoJson.h>
 #include <time.h>
 
 namespace net {
@@ -33,7 +32,6 @@ namespace {
 
 SemaphoreHandle_t dataMutex;
 SolarData solarData;   /* guarded by dataMutex */
-PotaData potaData;     /* guarded by dataMutex */
 volatile bool ntpDone = false;
 
 /* ---- Small helpers -------------------------------------------------------- */
@@ -119,61 +117,6 @@ void refreshSolar() {
     Serial.printf("[net] solar data refreshed (SFI %s)\n", fresh.solarFlux);
 }
 
-void refreshPota() {
-    String json = httpGet(POTA_URL);
-    if (json.length() == 0) return;
-
-    /* The full spot list is large. A filter document tells ArduinoJson to
-     * keep only the fields we display and discard the rest during parsing,
-     * which keeps the memory footprint small and predictable. */
-    StaticJsonDocument<192> filter;
-    filter[0]["activator"] = true;
-    filter[0]["frequency"] = true;
-    filter[0]["reference"] = true;
-    filter[0]["mode"] = true;
-    filter[0]["name"] = true;
-
-    DynamicJsonDocument doc(32 * 1024);
-    /* Parse from the raw C string: unambiguous input type for ArduinoJson,
-     * which copies what the filter keeps into `doc`. */
-    DeserializationError err =
-        deserializeJson(doc, json.c_str(), DeserializationOption::Filter(filter));
-    if (err) {
-        Serial.printf("[net] POTA JSON parse failed: %s\n", err.c_str());
-        return;
-    }
-
-    PotaData fresh;
-    for (JsonObject spot : doc.as<JsonArray>()) {
-        if (fresh.count >= POTA_MAX_SPOTS) break;
-        PotaSpot &s = fresh.spots[fresh.count];
-        strlcpy(s.activator, spot["activator"] | "", sizeof(s.activator));
-        strlcpy(s.reference, spot["reference"] | "", sizeof(s.reference));
-        strlcpy(s.parkName, spot["name"] | "", sizeof(s.parkName));
-        strlcpy(s.modeStr, spot["mode"] | "", sizeof(s.modeStr));
-        /* The API reports frequency in kHz, usually as a string
-         * ("14285.0") but occasionally tooling shifts types, so accept a
-         * bare number too. A `| "0"` default alone would silently turn a
-         * numeric value into 0 Hz. Converted to Hz for consistency with
-         * everything else in this project. */
-        JsonVariantConst freqField = spot["frequency"];
-        double khz = 0.0;
-        if (freqField.is<const char *>()) {
-            khz = atof(freqField.as<const char *>());
-        } else {
-            khz = freqField.as<double>();
-        }
-        s.freqHz = static_cast<uint32_t>(khz * 1000.0);
-        fresh.count++;
-    }
-    fresh.valid = fresh.count > 0;
-
-    xSemaphoreTake(dataMutex, portMAX_DELAY);
-    potaData = fresh;
-    xSemaphoreGive(dataMutex);
-    Serial.printf("[net] POTA refreshed, %d spots\n", fresh.count);
-}
-
 /* ---- The task ----------------------------------------------------------------- */
 
 void netTask(void *) {
@@ -200,7 +143,6 @@ void netTask(void *) {
     }
 
     uint32_t lastSolarMs = 0;
-    uint32_t lastPotaMs = 0;
     bool firstRun = true;
 
     for (;;) {
@@ -209,10 +151,6 @@ void netTask(void *) {
             if (firstRun || now - lastSolarMs >= HAMQSL_REFRESH_MS) {
                 refreshSolar();
                 lastSolarMs = now;
-            }
-            if (firstRun || now - lastPotaMs >= POTA_REFRESH_MS) {
-                refreshPota();
-                lastPotaMs = now;
             }
             firstRun = false;
         }
@@ -249,11 +187,17 @@ SolarData solar() {
     return copy;
 }
 
-PotaData pota() {
-    xSemaphoreTake(dataMutex, portMAX_DELAY);
-    PotaData copy = potaData;
-    xSemaphoreGive(dataMutex);
-    return copy;
+Status status() {
+    Status s;
+    s.wifiUp = WiFi.status() == WL_CONNECTED;
+    strlcpy(s.ssid, WIFI_SSID, sizeof(s.ssid));
+    if (s.wifiUp) {
+        strlcpy(s.ip, WiFi.localIP().toString().c_str(), sizeof(s.ip));
+        s.rssi = WiFi.RSSI();
+    } else {
+        strlcpy(s.ip, "not connected", sizeof(s.ip));
+    }
+    return s;
 }
 
 } // namespace net

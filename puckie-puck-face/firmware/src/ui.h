@@ -1,14 +1,13 @@
 /**
- * ui.h: the four screens and the glue that routes input events to them.
+ * ui.h: screen-mode navigation and the glue that routes input events.
  *
- * Screens, in double-click order:
- *   0 Radio: big frequency, mode, S-meter arc, link status. Rotating the
- *     knob tunes; a click cycles the tuning step; long press is reserved
- *     for the future pairing gesture.
- *   1 Clock: UTC and local time, date, grid square.
- *   2 Bands: N0NBH solar numbers and band condition ratings.
- *   3 POTA: recent activator spots; rotate to highlight one, click to
- *     tune the radio to it (the fun party trick).
+ * Double-click moves between top-level modes; single-click moves between
+ * screens inside the current mode:
+ *   Radio: Radio, Quick Memories, Band Select
+ *   Time: Grayline, Clock
+ *   Conditions: Band Conditions
+ *   Controls: mode, filter, RF front end, tuner and meters
+ *   System: Status
  *
  * All functions here must be called from the LVGL thread (loop()).
  */

@@ -14,6 +14,8 @@
 inline uint32_t millis() { return 0; }
 inline void delay(uint32_t) {}
 inline void delayMicroseconds(uint32_t) {}
+inline long random(long max) { return max > 0 ? 0 : 0; }
+inline long random(long min, long max) { return max > min ? min : min; }
 
 #define HIGH 1
 #define LOW 0

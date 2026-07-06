@@ -17,6 +17,7 @@ struct WiFiClass {
     int status() { return 0; }
     IPAddress localIP() { return IPAddress(); }
     String SSID() { return String(); }
+    int32_t RSSI() { return 0; }
 };
 extern WiFiClass WiFi;
 

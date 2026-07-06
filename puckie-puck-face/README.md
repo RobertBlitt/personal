@@ -66,20 +66,22 @@ retry.
 
 ### 3. Drive it
 
-* Double click: cycle screens (Radio, Clock, Band conditions, POTA spots)
+* Double click: cycle screens (Radio, Clock, Band conditions, Controls, Status)
 * Radio screen: turn to tune, click to change tuning step (10 Hz to 10 kHz),
   long press cycles mode (placeholder for the future pairing gesture)
-* POTA screen: turn to pick a spot, click to tune the radio to it
 
 ## The screens
 
 1. **Radio**: frequency in big digits, mode, S-meter arc around the bezel,
    link status.
-2. **Clock**: UTC and local time via NTP, date, your grid square.
-3. **Band conditions**: solar flux, A and K index, plus day/night ratings
+2. **Quick memories / band select**: jump to profile-defined memories and
+   band landing points.
+3. **Grayline / Clock**: UTC and local time via NTP, date, grid square, and
+   grayline map.
+4. **Band conditions**: solar flux, A and K index, plus day/night ratings
    for the HF band groups, from N0NBH's hamqsl.com feed.
-4. **POTA**: live Parks On The Air activator spots from api.pota.app,
-   with tune-to-spot.
+5. **Controls / Status**: mode, filter, preamp, attenuator, AGC, ATU, meters,
+   WiFi, and radio-link status.
 
 ## When the real radio arrives
 

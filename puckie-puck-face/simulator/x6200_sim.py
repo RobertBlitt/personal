@@ -529,7 +529,9 @@ def activity_thread(state: RadioState, stop: threading.Event):
 # TCP server plumbing.
 # ----------------------------------------------------------------------------
 
-def serve_client(conn: socket.socket, peer, state: RadioState, verbose: bool):
+def serve_client(conn: socket.socket, peer, state: RadioState, verbose: bool,
+                 active_clients: dict = None,
+                 clients_lock: threading.Lock = None):
     def log(msg):
         print(f"[{peer[0]}:{peer[1]}] {msg}", flush=True)
 
@@ -553,10 +555,16 @@ def serve_client(conn: socket.socket, peer, state: RadioState, verbose: bool):
                 if verbose:
                     log(f"tx {reply.hex(' ')}")
                 conn.sendall(reply)
-    except (ConnectionResetError, BrokenPipeError):
+    except socket.timeout:
+        log("idle timeout")
+    except (ConnectionResetError, BrokenPipeError, OSError):
         pass
     finally:
         conn.close()
+        if active_clients is not None and clients_lock is not None:
+            with clients_lock:
+                if active_clients.get(peer[0]) is conn:
+                    del active_clients[peer[0]]
         log("disconnected")
 
 
@@ -568,6 +576,10 @@ def main():
     parser.add_argument("--mode", default="USB", choices=list(MODES.values()),
                         help="initial mode (default USB)")
     parser.add_argument("--verbose", action="store_true", help="hex-dump every frame")
+    parser.add_argument("--idle-timeout", type=float, default=0,
+                        help="close idle client sockets after N seconds (default: disabled)")
+    parser.add_argument("--single-client-per-ip", action="store_true",
+                        help="test-only: evict the previous client from the same source IP")
     args = parser.parse_args()
 
     mode_num = {v: k for k, v in MODES.items()}[args.mode]
@@ -580,6 +592,8 @@ def main():
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((args.host, args.port))
     server.listen(4)
+    active_clients = {} if args.single_client_per_ip else None
+    clients_lock = threading.Lock()
     print(f"X6200 simulator listening on {args.host}:{args.port} "
           f"(VFO {args.freq:,} Hz {args.mode})", flush=True)
     print("Point the knob firmware, or `nc`, or rigctl at this port.", flush=True)
@@ -587,7 +601,22 @@ def main():
     try:
         while True:
             conn, peer = server.accept()
-            threading.Thread(target=serve_client, args=(conn, peer, state, args.verbose),
+            if args.idle_timeout > 0:
+                conn.settimeout(args.idle_timeout)
+            conn.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            if active_clients is not None:
+                with clients_lock:
+                    previous = active_clients.get(peer[0])
+                    if previous is not None:
+                        try:
+                            previous.shutdown(socket.SHUT_RDWR)
+                        except OSError:
+                            pass
+                        previous.close()
+                    active_clients[peer[0]] = conn
+            threading.Thread(target=serve_client,
+                             args=(conn, peer, state, args.verbose,
+                                   active_clients, clients_lock),
                              daemon=True).start()
     except KeyboardInterrupt:
         print("\nshutting down")

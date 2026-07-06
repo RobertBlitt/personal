@@ -22,7 +22,8 @@
 
 namespace civ {
 
-/* Protocol constants from the Radioddity document. */
+/* Protocol constants from the Radioddity document. The default addresses
+ * match the X6200; the active profile can override them at runtime. */
 constexpr uint8_t PREAMBLE = 0xFE;
 constexpr uint8_t TERMINATOR = 0xFD;
 constexpr uint8_t ADDR_RADIO = 0xA4;
@@ -43,6 +44,10 @@ enum class Mode : uint8_t {
 /* Human-readable name for a mode byte ("USB", "CW", ...). Unknown bytes
  * return "?" rather than crashing the UI. */
 const char *modeName(uint8_t mode);
+
+void setAddresses(uint8_t radioAddress, uint8_t controllerAddress);
+uint8_t radioAddress();
+uint8_t controllerAddress();
 
 /* A frame under construction or freshly parsed. CI-V frames are tiny; the
  * longest documented X6200 frame is well under 20 bytes. */
@@ -73,6 +78,13 @@ Frame makeSetFrequency(uint32_t hz);       /* cmd 0x25 sub 0x00 */
 Frame makeReadMode();                      /* cmd 0x26 sub 0x00 */
 Frame makeSetMode(uint8_t mode, bool dataMode, uint8_t filter); /* 0x26 */
 Frame makeReadSMeter();                    /* cmd 0x15 sub 0x02 */
+Frame makeReadMeter(uint8_t meter);        /* cmd 0x15: RF/SWR/voltage */
+Frame makeReadAttenuator();                /* cmd 0x11 */
+Frame makeSetAttenuator(bool enabled);
+Frame makeReadFunction(uint8_t function);  /* cmd 0x16: preamp/AGC/etc. */
+Frame makeSetFunction(uint8_t function, uint8_t value);
+Frame makeReadTuner();                     /* cmd 0x1C sub 0x01 */
+Frame makeSetTuner(uint8_t command);       /* 0=off, 1=on, 2=start tune */
 Frame makeSetBand(uint8_t bandRegister);   /* cmd 0x1A sub 0x01 */
 Frame makeReadRadioId();                   /* cmd 0x19 sub 0x00 */
 
@@ -106,6 +118,10 @@ struct Reply {
         Frequency, /* cmd 0x03 or 0x25: freqHz is valid */
         ModeInfo,  /* cmd 0x26: mode, dataMode, filter are valid */
         SMeter,    /* cmd 0x15 0x02: level is valid */
+        Meter,     /* cmd 0x15 other sub-command: sub and level are valid */
+        Attenuator,/* cmd 0x11: value is valid */
+        Function,  /* cmd 0x16: sub and value are valid */
+        Tuner,     /* cmd 0x1C 0x01: value is valid */
         Other,     /* something we did not ask about */
     };
     Kind kind = Kind::Other;
@@ -114,6 +130,8 @@ struct Reply {
     bool dataMode = false;
     uint8_t filter = 1;
     uint8_t level = 0;
+    uint8_t sub = 0;
+    uint8_t value = 0;
 };
 
 /* Parse a radio-to-controller body into a Reply. Returns false when the

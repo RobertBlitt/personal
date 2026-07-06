@@ -220,7 +220,7 @@ class TestOverTcp(unittest.TestCase):
             conn, peer = server.accept()
             x6200_sim.serve_client(conn, peer, state, verbose=False)
 
-        t = threading.Thread(target=one_client, daemon=True)
+        t = threading.Thread(target=one_client)
         t.start()
 
         client = socket.create_connection(("127.0.0.1", port), timeout=2)
@@ -231,10 +231,12 @@ class TestOverTcp(unittest.TestCase):
         while not reply.endswith(b"\xfd") and time.time() < deadline:
             reply += client.recv(64)
         client.close()
+        t.join(timeout=2)
         server.close()
 
         # The doc's exact example reply: FE FE 00 A4 03 60 23 00 21 00 FD
         self.assertEqual(reply, bytes.fromhex("FEFE00A4036023002100FD"))
+        self.assertFalse(t.is_alive(), "simulator client thread did not exit")
 
 
 if __name__ == "__main__":
