@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Electronics Lab v1.4 Product Design</title>
+<style>
+  @page { size: Letter; margin: 0.85in; }
+  body {
+    font-family: Calibri, Arial, "Segoe UI", sans-serif;
+    color: #1a1a1a;
+    font-size: 11pt;
+    line-height: 1.45;
+    max-width: 7.6in;
+    margin: 0 auto;
+  }
+  .titlepage { text-align: center; padding-top: 1.4in; }
+  .titlepage h1 { font-size: 30pt; margin-bottom: 0.1in; }
+  .titlepage .subtitle { font-size: 14pt; color: #333; margin-bottom: 0.5in; }
+  .titlepage .meta { font-size: 11pt; color: #444; }
+  .titlepage .version-tag {
+    display: inline-block; margin-top: 0.6in; padding: 4px 14px;
+    background: #EAF1FB; border: 1px solid #5B8DC9; border-radius: 4px;
+    color: #1F4E79; font-weight: bold; font-size: 10pt;
+  }
+  h2 {
+    color: #1F4E79; font-size: 15pt; border-bottom: 2px solid #1F4E79;
+    padding-bottom: 3px; margin-top: 28px;
+  }
+  h3 { color: #2E75B6; font-size: 12.5pt; margin-top: 18px; }
+  h4 { color: #2E75B6; font-size: 11.5pt; margin-top: 14px; margin-bottom: 4px;}
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .callout {
+    background: #FDF3D8; border: 1px solid #D8B45A; border-radius: 4px;
+    padding: 10px 14px; margin: 12px 0; font-size: 10.5pt;
+  }
+  .callout.blue { background: #EAF1FB; border-color: #5B8DC9; }
+  .callout.red  { background: #FCE9E9; border-color: #D86A6A; }
+  .callout.green { background: #E7F4EA; border-color: #5C9E6E; }
+  .callout.purple { background: #F1EAF8; border-color: #9B72CB; }
+  .callout b.label { color: #1F4E79; }
+  .figure-caption { color: #2E75B6; font-style: italic; font-size: 10pt; margin: 4px 0 16px 0; }
+  .new-tag {
+    display: inline-block; background: #2E7D32; color: white; font-size: 8.5pt;
+    font-weight: bold; border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .rev-tag {
+    display: inline-block; background: #B7791F; color: white; font-size: 8.5pt;
+    font-weight: bold; border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .move-tag {
+    display: inline-block; background: #6A4C93; color: white; font-size: 8.5pt;
+    font-weight: bold; border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 18px 0; font-size: 10pt; }
+  th, td { border: 1px solid #B7C6DE; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #D9E2F3; color: #1F4E79; }
+  tr.cat-row td { background: #EEF3FB; font-weight: bold; color: #1F4E79; }
+  tr.kit-row td { background: #F1EAF8; font-weight: bold; color: #4A2E6F; }
+  td.small { font-size: 9.3pt; color: #444; }
+  .diagram {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; margin: 18px 0; flex-wrap: wrap;
+  }
+  .diagram.column { flex-direction: column; }
+  .node {
+    border: 1px solid #888; border-radius: 5px; padding: 10px 12px;
+    font-size: 9.6pt; text-align: center; min-width: 1.2in; max-width: 1.7in;
+  }
+  .node b { display: block; font-size: 10.2pt; margin-bottom: 3px; }
+  .node.yellow { background: #FCF3CF; border-color: #D4AC0D; }
+  .node.gray   { background: #F2F2F2; border-color: #999999; }
+  .node.blue   { background: #D6EAF8; border-color: #5499C7; }
+  .node.green  { background: #DCEFE0; border-color: #5C9E6E; }
+  .node.red    { background: #FBE2E2; border-color: #C0504D; }
+  .node.purple { background: #EDE3F5; border-color: #8E6BB8; }
+  .arrow { font-size: 16pt; color: #555; }
+  .arrow-label { font-size: 8.6pt; color: #555; text-align: center; max-width: 0.9in; }
+  .arrow-col { display: flex; flex-direction: column; align-items: center; }
+  .schema-block {
+    background: #F7F7F7; border: 1px solid #CCC; border-radius: 4px;
+    padding: 10px 14px; font-family: "Courier New", monospace; font-size: 9pt;
+    white-space: pre; overflow-x: auto; margin: 10px 0 18px 0;
+  }
+  .footer { text-align: center; color: #888; font-size: 9pt; margin-top: 26px; }
+  .pagebreak { page-break-before: always; }
+  .decisioncols { display: flex; gap: 16px; align-items: flex-start; }
+  .decisioncols .callout { flex: 1; margin: 0; }
+  .mvp-box {
+    background: #1F4E79; color: white; border-radius: 6px;
+    padding: 16px 20px; margin: 16px 0; font-size: 11.5pt; text-align: center;
+  }
+  .mvp-box b { font-size: 12.5pt; }
+</style>
+</head>
+<body>
+
+<div class="titlepage">
+  <h1>Smart Electronics Lab v1.4</h1>
+  <div class="subtitle">A three-kit product ladder with a no-code default path: guided electronics lab, internet radio, and SDR workstation</div>
+  <div class="meta">Prepared for Bob Litt<br>Revised June 2026 &mdash; No-Code User Paths &amp; Firmware Delivery Architecture</div>
+  <div class="version-tag">v1.4 &middot; supersedes v1.3</div>
+</div>
+
+<div class="pagebreak"></div>
+
+<h2>0. What changed in v1.4</h2>
+<p>v1.4 adds a no-code product architecture on top of v1.3's three-kit ladder. The design problem: none of the three kits should require the ordinary learner to write or compile code to reach their main milestones. Coding remains possible and teachable, but it moves to an explicit, optional Developer Mode path (&sect;20) rather than being the default way to get a kit working. v1.4 changes nothing about the kit ladder, BOM, hardware design, or lesson content decided in v1.3 &mdash; it adds the user-facing and firmware-delivery layer that sits on top of all three kits.</p>
+<table>
+<tr><th>Change</th><th>What happened</th></tr>
+<tr><td>Hard product rule</td><td>A learner must be able to complete Kit 1, Kit 2, and Kit 3's main milestones without writing code. See &sect;20.</td></tr>
+<tr><td>Three user paths</td><td>Use Mode (default, no-code, prebuilt firmware), Configure Mode (no-code, editable settings), and Developer Mode (PlatformIO/Arduino, optional, never required for a kit milestone). See &sect;20.</td></tr>
+<tr><td>Firmware delivery architecture</td><td>Three firmware images defined: Elecrow Tutor Firmware, ESP32 Audio Firmware, and a later SDR Bridge mode of the same Elecrow firmware &mdash; each with explicit responsibilities and a JSON command/status protocol. See &sect;21.</td></tr>
+<tr><td>Browser-based flashing</td><td>A web installer (ESP Web Tools / ESP Launchpad class tool) is now the default Use Mode flashing path; Arduino IDE/PlatformIO are not required for normal use. Flagged that this needs a desktop browser with Web Serial &mdash; not assumed to work on iPhone/iPad. See &sect;22.</td></tr>
+<tr><td>Repository structure</td><td>Proposed a concrete GitHub repo layout (firmware/, shared-protocol/, lesson-packs/, installers/, docs/, hardware/) and a release-artifact checklist. See &sect;23.</td></tr>
+<tr><td>First-time user flow</td><td>Spelled out as product behavior, not implementation: Kit 1 Part 1 first boot, Kit 1 Part 2 radio capstone, and Kit 2/3 first boot. See &sect;24.</td></tr>
+<tr><td>Configuration schema</td><td>Added a minimal Kit 1 config schema (Wi-Fi, stations, lesson pack, calibration, safety) covering everything Configure Mode needs to expose without coding. See &sect;25.</td></tr>
+<tr><td>Lesson schema extension</td><td>Extended &sect;7's lesson schema with firmware/hardware requirement fields, needed for a no-code lesson engine to self-describe its own requirements before a lesson starts. See &sect;26.</td></tr>
+<tr><td>Product branch vs. developer branch</td><td>Formalized as a hard rule: every required kit milestone must be achievable on the Product branch (prebuilt firmware) alone. See &sect;27.</td></tr>
+<tr><td>Build plan for Claude/Codex</td><td>Added a concrete build-priority order and three explicit MVPs (LED/resistor lesson, radio playback, SDR knob control), restated for the implementers rather than the buyer. See &sect;28.</td></tr>
+<tr><td>Support, recovery, flash behavior</td><td>Added recovery/self-test requirements and restated v1.2/v1.3's flash-write and storage decisions (&sect;7) under the no-code framing. See &sect;29.</td></tr>
+<tr><td>Kit 2/3 image strategy</td><td>Extended &sect;13 with a no-code requirement: Kit 2/3 users get a prepared Pi/mini PC image or packaged installer, not a compile-from-source path. See &sect;30.</td></tr>
+<tr><td>Product identity statement</td><td>Added a one-paragraph product identity statement: this is a guided electronics learning system with an optional developer track, not a coding kit. See &sect;31.</td></tr>
+</table>
+<p>Nothing in this brief contradicted a v1.3 decision; it adds a layer above the existing kit/hardware/lesson design rather than changing it. The one judgment call worth flagging: Firmware Image 3 (SDR Bridge, &sect;21) is documented as additional modes of the existing Elecrow tutor firmware rather than a fourth separate codebase, since Kit 2/3 already reuse the same physical Elecrow unit carried over from Kit 1 (&sect;13).</p>
+
+<h2>1. Decision log <span class="rev-tag">UPDATED</span></h2>
+<div class="decisioncols">
+<div class="callout green">
+<b class="label">Accepted</b>
+<ul>
+  <li>Elecrow remains tutor and control head across all three kits.</li>
+  <li>Elecrow is <b>not</b> assumed to have a usable audio output. Kit 1's internet-radio capstone always uses a second, dedicated ESP32 audio module.</li>
+  <li>Kit 1 culminates in an internet-radio "sound moment" &mdash; this is the capstone, not an optional side feature.</li>
+  <li>The audio module stays in the ESP32/Arduino world: ESP32-S3 dev board + MAX98357A breakout on the breadboard (&sect;6), not the integrated ESP32-A1S/ESP-ADF path.</li>
+  <li>SDR/waterfall capability moves entirely out of Kit 1, into Kit 2 (add-on, user's monitor) and Kit 3 (Kit 2 + included 15&Prime; display).</li>
+  <li>Raspberry Pi / mini PC compute is reserved for Kit 2/3 only &mdash; never introduced just for internet radio.</li>
+  <li>RTL-SDR Blog V4 is the default Kit 2/3 receiver recommendation (native HF, better filtering than V3, current community default, ~$35&ndash;40).</li>
+  <li>SDR++ is the default first-success waterfall software for Kit 2/3 (modern, cross-platform, lighter than GQRX on a Pi).</li>
+  <li>USB-serial JSON-per-line (carried from v1.1/v1.2) generalizes to audio and SDR commands, not just knob/touch events (&sect;6, &sect;13).</li>
+  <li>First product path remains standard breadboard + smart power/measurement + display tutor &mdash; never a proprietary smart breadboard.</li>
+  <li>3.3V default rail, INA219 topology, extended lesson schema, structural power-off-before-rewiring, and the controlled fault-screen drill all carry forward from v1.2 unchanged.</li>
+  <li>Kit 1 ships in two customer-facing tiers: <b>Kit 1 Standard</b> (Part 1 only) and <b>Kit 1 Deluxe</b> (Part 1 + Part 2, adding the second ESP32 audio module, I2S DAC/amp, speaker, and the internet-radio lesson pack). The tier split is a deliberate product and curriculum decision, not only a workaround for the Elecrow's unconfirmed audio path.</li>
+  <li>A future v2 custom dial/display module is documented as a direction (&sect;19), converging the Elecrow's and the second ESP32 audio module's functions into one device &mdash; explicitly deferred until after the MVP is proven, and explicitly not a blocker or delay for the v1.3 plan.</li>
+  <li>Default user path is no-code (&sect;20); coding is an optional Developer Mode branch, not a prerequisite, for any of the three kits.</li>
+  <li>Firmware is prebuilt for Use Mode; browser-based flashing (ESP Web Tools/ESP Launchpad class tool) is the preferred installer, not Arduino IDE/PlatformIO (&sect;22).</li>
+  <li>Configure Mode is allowed and documented (&sect;20, &sect;25), but it is configuration, not coding.</li>
+  <li>Developer Mode exists and is documented (&sect;20, &sect;23), but is optional for every kit milestone.</li>
+  <li>Kit 1 Part 2 must produce the sound moment without requiring code editing (&sect;20, &sect;24).</li>
+  <li>Kit 2/Kit 3 use a prepared SDR software path &mdash; an image or installer &mdash; not a compile-from-source path (&sect;30).</li>
+  <li>Claude/Codex build the first firmware; users install it through the Product branch (&sect;27, &sect;28).</li>
+  <li>Firmware Image 3 (SDR Bridge) is additional modes of the existing Elecrow tutor firmware, not a separate codebase (&sect;21).</li>
+</ul>
+</div>
+<div class="callout blue">
+<b class="label">Open</b>
+<ul>
+  <li>Exact second-ESP32 audio board SKU/vendor listing (direction set in &sect;6; not yet sourced to a specific listing).</li>
+  <li>Exact amp/speaker pairing and whether a small enclosure/speaker box is needed.</li>
+  <li>Elecrow-to-audio-module physical link: UART recommended as the simplest default; I2C and Wi-Fi (e.g. ESP-NOW) remain documented alternatives.</li>
+  <li>Kit 2 compute: Raspberry Pi 5 vs. Pi 4 vs. x86 mini PC. 2026 DRAM pricing has pushed Pi 5 and mini PCs close to cost parity, so this is a genuine trade-off now, not a default (&sect;13).</li>
+  <li>Whether Kit 2 ships purely as a Kit-1-dependent add-on, or also as a partially standalone advanced kit for someone who skipped Kit 1.</li>
+  <li>Kit 3 touch vs. non-touch 15&Prime; display &mdash; default assumption is non-touch, since the Elecrow already provides physical control (&sect;14).</li>
+  <li>Elecrow expansion connector type and exact pinout (carried from v1.2, still unconfirmed).</li>
+  <li>Elecrow I2S/audio feasibility &mdash; now a low-stakes curiosity rather than a Kit 1 blocker, but still worth checking once for future flexibility.</li>
+  <li>ESP Web Tools vs. ESP Launchpad as the primary installer (&sect;22).</li>
+  <li>Exact firmware packaging/release format (&sect;23).</li>
+  <li>Exact station-configuration interface &mdash; on-device menu vs. local web UI vs. config file (&sect;20, &sect;25).</li>
+  <li>Whether the Kit 2/3 Pi image is custom-built or assembled via install scripts on stock Raspberry Pi OS (&sect;30).</li>
+  <li>How much lesson content lives in firmware vs. filesystem for v1 (&sect;7, &sect;29).</li>
+  <li>Whether a local web UI is needed in v1 or can wait until v2 (&sect;20).</li>
+</ul>
+</div>
+</div>
+
+<h2>2. The MVP, stated plainly <span class="new-tag">NEW</span></h2>
+<div class="mvp-box">
+The first MVP is <b>not</b> SDR. It is <b>not</b> a 15-inch screen. It is <b>not</b> a proprietary smart breadboard.<br><br>
+The first MVP is <b>one guided LED/resistor lesson</b> where the Elecrow tutor reads measured current from the INA219 and responds correctly &mdash; a pass message on expected current, a fail message on an open circuit or an out-of-range reading.<br><br>
+Everything else in this document is what gets built <i>after</i> that one lesson works end-to-end.
+</div>
+
+<h2>3. Three-kit product ladder</h2>
+<p>The distinctive idea is not "an electronics kit." It is a guided breadboard system where the device <b>teaches, observes, and reacts</b>. The Elecrow rotary display is the tutor throughout: it shows the lesson, accepts knob/touch input, reads smart measurement data, and guides the learner step by step &mdash; across all three kits, not just the first.</p>
+
+<div class="diagram">
+  <div class="node yellow"><b>Kit 1, Part 1</b>(Kit 1 Standard)<br>Quiet guided electronics lab<br>Ohm's law, LEDs, buttons, pots, INA219 measurement.</div>
+  <div class="arrow-col"><span class="arrow">&rarr;</span><span class="arrow-label">graduate when L0&ndash;L11 run unattended</span></div>
+  <div class="node yellow"><b>Kit 1, Part 2</b>(completes Kit 1 Deluxe)<br>Internet-radio capstone<br>Second ESP32 audio module. Sound is the "wow" moment.</div>
+  <div class="arrow-col"><span class="arrow">&rarr;</span><span class="arrow-label">add compute via the interface contract (&sect;6, &sect;13)</span></div>
+  <div class="node purple"><b>Kit 2</b>Advanced SDR / Waterfall Add-On<br>RTL-SDR, Pi/mini PC, user's own monitor. Elecrow stays the control head.</div>
+  <div class="arrow-col"><span class="arrow">&rarr;</span><span class="arrow-label">add the bundled display</span></div>
+  <div class="node purple"><b>Kit 3</b>SDR Workstation<br>Kit 2 plus an included 15&Prime; display.</div>
+</div>
+<div class="figure-caption">Figure 1. The three-kit product ladder. Kit 1 is one purchase with two parts; Kit 2 and Kit 3 are separate, optional purchases for users who want to go further.</div>
+
+<div class="callout purple">
+<b class="label">Product tiers vs. build sequence:</b> "Part 1" / "Part 2" above describe build sequence; <b>Kit 1 Standard</b> / <b>Kit 1 Deluxe</b> are the customer-facing names for the same boundary. Kit 1 Standard is Part 1 only. Kit 1 Deluxe is Part 1 plus Part 2 &mdash; the second ESP32 audio module, I2S DAC/amp, speaker, and the internet-radio lesson pack. The split is a deliberate product and curriculum feature, not only a workaround for the Elecrow's unconfirmed audio path (&sect;6).
+</div>
+
+<table>
+<tr><th>Kit</th><th>Purpose</th><th>New compute?</th><th>Display</th><th>Exit criteria</th></tr>
+<tr><td><b>Kit 1, Part 1</b><br>(Kit 1 Standard)</td><td>Quiet guided electronics lab</td><td>No &mdash; Elecrow only</td><td>Elecrow 2.1&Prime;</td><td>A beginner completes L0&ndash;L11 using only the on-screen tutor, with at least one correct INA219 current/voltage validation.</td></tr>
+<tr><td><b>Kit 1, Part 2</b><br>(completes Kit 1 Deluxe)</td><td>Internet-radio capstone</td><td>Second ESP32 (audio only)</td><td>Elecrow 2.1&Prime;</td><td>The learner selects a saved station on the Elecrow and the second ESP32 audio module plays internet-radio audio through a speaker.</td></tr>
+<tr><td><b>Kit 2</b></td><td>Advanced SDR / waterfall add-on</td><td>Raspberry Pi or mini PC</td><td>User-supplied monitor</td><td>The Elecrow knob changes an SDR parameter (tuned frequency, waterfall zoom) on the Pi/mini PC, visible on the user's monitor.</td></tr>
+<tr><td><b>Kit 3</b></td><td>SDR workstation, all-in-one</td><td>Same as Kit 2</td><td>Included 15&Prime; display</td><td>Same as Kit 2, but the waterfall renders on the included 15&Prime; display.</td></tr>
+</table>
+
+<div class="callout">
+  <b class="label">Design rule (unchanged):</b> every early purchase remains useful later. The breadboard teaches and prototypes. It does not become the final enclosure. The Elecrow purchased for Kit 1 is the same unit used as the control head in Kit 2 and Kit 3.
+</div>
+
+<h2>4. Open risks</h2>
+<p>None of these block ordering the Kit 1 parts list. They block committing scope for the kit they're listed under.</p>
+<table>
+<tr><th>Risk</th><th>Why it matters</th><th>Default assumption</th><th>Resolved by</th></tr>
+<tr><td>Elecrow connector/pinout unconfirmed</td><td>Determines INA219 wiring and whether an adapter cable is needed</td><td>Qwiic/STEMMA-compatible, unverified</td><td>Photograph + identify on first-boot (&sect;17)</td></tr>
+<tr><td>Elecrow I2S/audio feasibility</td><td>Was a Kit 1 blocker in v1.2; now just a future-flexibility question</td><td>Not available; not needed since Kit 1 audio moved off-Elecrow</td><td>Optional check, no deadline</td></tr>
+<tr><td>Exact audio module SKU</td><td>Direction (ESP32-S3 + MAX98357A) is set; specific listing is not</td><td>Any ESP32-S3 dev board + MAX98357A breakout pair</td><td>Sourcing pass before Kit 1 Part 2 build</td></tr>
+<tr><td>Elecrow&harr;audio-module link</td><td>UART, I2C, and Wi-Fi are all technically possible</td><td>UART (simplest hardware, no addressing)</td><td>First Kit 1 Part 2 build attempt</td></tr>
+<tr><td>Kit 2 compute choice</td><td>Pi 5 and mini PCs are near cost parity in 2026; tradeoffs differ (ARM ecosystem vs. x86 driver coverage)</td><td>Raspberry Pi 5 (ecosystem/documentation fit); mini PC if Pi price/stock is bad</td><td>&sect;13 research; final call at Kit 2 purchase time</td></tr>
+<tr><td>Kit 2 standalone vs. add-on</td><td>Affects whether Kit 2 needs its own onboarding/UI path</td><td>Add-on only, assumes Kit 1's Elecrow</td><td>Revisit if a no-Elecrow Kit 2 SKU is requested</td></tr>
+<tr><td>Kit 3 touch display</td><td>Touch adds cost and complexity</td><td>Non-touch; Elecrow is the physical control</td><td>Revisit only if user testing shows a real gap</td></tr>
+</table>
+
+<h2>5. Kit 1, Part 1: hardware design</h2>
+
+<div class="callout red">
+<b class="label">3.3V logic warning:</b> the Elecrow / ESP32-S3 GPIO and I2C pins are 3.3V logic. Do not connect 5V directly to any GPIO, I2C, UART, touch, display, or expansion pin unless the Elecrow documentation explicitly states that pin is 5V tolerant. The breadboard may use 5V for isolated LED/resistor experiments that never touch an Elecrow pin &mdash; but any circuit connected to Elecrow data pins defaults to 3.3V logic.
+</div>
+
+<div class="diagram column">
+  <div class="diagram">
+    <div class="node gray">USB-C wall charger or laptop</div>
+    <span class="arrow">&rarr;</span>
+    <div class="node blue">Plugable USB-C power meter<br>visible V, A, W</div>
+    <span class="arrow">&rarr;</span>
+    <div class="node blue">Treedix USB-C breadboard power<br>5V and 3.3V rails</div>
+  </div>
+  <div class="arrow">&darr;<span class="arrow-label">powers rails</span></div>
+  <div class="diagram">
+    <div class="node blue">Elecrow 2.1" ESP32-S3 rotary display<br>lesson engine, knob, touch UI &mdash; 3.3V logic</div>
+    <span class="arrow">&larr;</span>
+    <div class="node gray">BusBoard BB830 breadboard<br>LEDs, resistors, buttons, pots, buzzer, transistor tests</div>
+    <span class="arrow">&larr;</span>
+    <div class="node yellow">Adafruit INA219<br>power sensor &mdash; senses load, I2C reading</div>
+  </div>
+</div>
+<div class="figure-caption">Figure 2. Kit 1, Part 1 hardware architecture (unchanged from v1.1/v1.2).</div>
+
+<div class="callout">
+  Version 0 is human-observed with the USB-C meter. Version 1 is software-observed with the INA219. Version 2 becomes a custom Smart Power Module.
+</div>
+
+<h3>Mounting answer</h3>
+<p>The Elecrow display does not need to sit in the breadboard. It sits next to the BB830 on the desk or mat, then connects to the breadboard through its GPIO/I2C connector or pigtail. The breadboard is for temporary circuits. The display is the tutor and controller.</p>
+
+<h3>Smart board answer</h3>
+<p>Do not start by designing a proprietary smart breadboard. Start by making the power path smart. If the Elecrow can read voltage and current from an INA219 sensor over I2C, the lesson engine can compare expected and measured behavior.</p>
+
+<h3>INA219 measurement topology</h3>
+<div class="diagram">
+  <div class="node blue">Power module<br>positive output</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node yellow">INA219<br>VIN+</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node yellow">INA219<br>VIN&minus;</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node gray">Breadboard load<br>rail or branch</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node gray">Load<br>(LED, resistor, etc.)</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node gray">Ground</div>
+</div>
+<div class="figure-caption">Figure 3. Correct INA219 placement &mdash; in series with the measured load, not in parallel with it. (Unchanged from v1.2.)</div>
+<ul>
+  <li>The INA219 must be in the measured load's current path. If the load can draw current through any path that bypasses the INA219, the software cannot detect that current.</li>
+  <li>The Elecrow, INA219, and breadboard circuit must share a common ground.</li>
+  <li>The INA219's I2C logic side should be powered at the Elecrow-safe logic voltage &mdash; normally 3.3V &mdash; unless the Elecrow's I2C pins are confirmed 5V tolerant.</li>
+</ul>
+
+<h2>6. Kit 1, Part 2: internet-radio capstone <span class="new-tag">NEW</span></h2>
+<p>Kit 1's "wow" moment is the first time the learner hears sound from something they assembled. This section assumes the Elecrow does <b>not</b> expose a clean, confirmed audio path, and routes the radio capstone through a second, dedicated ESP32 audio module instead &mdash; so the capstone never depends on an unconfirmed Elecrow capability.</p>
+
+<div class="callout purple">
+<b class="label">Why a second module, even if Elecrow audio turns out fine:</b> the second ESP32 audio module is not only a workaround for the Elecrow's uncertain audio path. Even if the Elecrow turned out to support clean audio output, Kit 1 Deluxe would likely still keep audio on a separate module: it keeps the tutor/control-head firmware free of streaming and decode workload, and it turns the radio capstone into a distinct, sellable tier (Kit 1 Deluxe over Kit 1 Standard) rather than a feature silently folded into the base unit.
+</div>
+
+<h3>Researched options for the audio subsystem</h3>
+<table>
+<tr><th>Option</th><th>Approx. cost</th><th>Beginner fit</th><th>Verdict</th></tr>
+<tr><td>Generic ESP32 dev board + MAX98357A breakout</td><td>$5&ndash;8 + $4&ndash;6</td><td>High &mdash; huge tutorial base, Arduino-native</td><td>Workable, but less headroom than -S3 for future use</td></tr>
+<tr><td><b>ESP32-S3 dev board + MAX98357A breakout</b></td><td>$8&ndash;12 + $4&ndash;6</td><td>High &mdash; same wiring as above, more PSRAM/headroom</td><td><b>Recommended</b></td></tr>
+<tr><td>ESP32-A1S Audio Kit (Ai-Thinker, integrated codec)</td><td>$10&ndash;15</td><td>Lower &mdash; less wiring, but expects ESP-ADF, which beginners consistently report as harder than the Arduino framework</td><td>Documented alternative, not the default</td></tr>
+<tr><td>M5Stack Atom Echo / Core2 (integrated speaker+mic+amp)</td><td>$13&ndash;30+</td><td>Lowest wiring burden, but appliance-like &mdash; little left to breadboard</td><td>Skips the pedagogy this kit is built around</td></tr>
+</table>
+<p><b>Recommendation: an ESP32-S3 dev board plus a MAX98357A I2S amplifier breakout, wired on the breadboard, programmed with the Arduino framework</b> (the <code>ESP32-audioI2S</code> library by schreibfaul1 is the most widely used library for exactly this). Reasoning against the brief's evaluation criteria: it is the cheapest path that stays fully in the ESP32/Arduino ecosystem already used for the Elecrow; it has the deepest base of existing internet-radio tutorials and example code; the MAX98357A needs only three signal pins (BCLK, LRC, DIN &mdash; no MCLK), which keeps the wiring beginner-friendly and keeps the build on the breadboard, consistent with Kit 1 Part 1's pedagogy; and it avoids ESP-ADF, which both beginners and experienced makers report as harder to configure than the integrated ESP32-A1S board's wiring savings are worth. The ESP32-A1S and M5Stack paths remain valid documented alternatives for someone who wants less wiring at the cost of either a steeper firmware learning curve (A1S/ESP-ADF) or a more appliance-like, less breadboard-centric build (M5Stack).</p>
+
+<h3>Architecture</h3>
+<div class="diagram">
+  <div class="node blue">Elecrow rotary display<br>tutor, station picker, volume knob</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node gray">UART link<br>(default; I2C/Wi-Fi are open alternatives)</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node yellow">ESP32-S3 audio module<br>Wi-Fi, stream decode</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node yellow">MAX98357A<br>I2S DAC + class-D amp</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node green">Speaker</div>
+</div>
+<div class="figure-caption">Figure 4. Kit 1, Part 2 architecture. The audio module owns Wi-Fi streaming and decoding; the Elecrow stays the tutor and the only thing the learner directly operates.</div>
+
+<h3>Command protocol, generalized <span class="rev-tag">EXTENDED</span></h3>
+<p>The v1.1/v1.2 USB-serial JSON-per-line direction carries forward, generalized to cover audio commands (and, in &sect;13, SDR commands) alongside the original knob/touch/button events:</p>
+<div class="schema-block">{"event":"knob","delta":1}
+{"event":"button","name":"select","state":"pressed"}
+{"event":"touch","x":214,"y":93}
+{"command":"play_station","id":"station_001"}
+{"command":"set_volume","value":42}
+{"status_request":"audio"}</div>
+<p>The Elecrow's firmware should already emit knob/touch/button events in this shape during Kit 1 Part 1, before the audio module exists to consume them. That is what avoids a rewrite when Part 2 is added.</p>
+
+<h3>What Part 2 adds to the lesson content</h3>
+<p>v1.1/v1.2's "Stage 2a" curriculum (Wi-Fi association, fetching a JSON API) did not get a separate slot in the new kit ladder &mdash; it is folded directly into the Part 2 lesson sequence (L12&ndash;L13, &sect;11), since connecting to Wi-Fi and fetching a station list is exactly what the radio capstone already requires.</p>
+
+<h2>7. Software loading and lesson content</h2>
+
+<div class="diagram">
+  <div class="node blue">Firmware<br>Display driver, knob/touch input, I2C sensor reader, lesson runtime, Wi-Fi update support</div>
+  <span class="arrow">&rarr;<div class="arrow-label">runs</div></span>
+  <div class="node yellow">Lesson content<br>Steps, images, expected readings, hints, questions, explanations</div>
+  <span class="arrow">&larr;<div class="arrow-label">checks against</div></span>
+  <div class="node gray">Hardware state<br>Voltage, current, power, faults, open circuit, over-current</div>
+</div>
+<div class="diagram">
+  <span class="arrow">&darr;<div class="arrow-label">drives</div></span>
+</div>
+<div class="diagram">
+  <div class="node gray" style="max-width:3in;">On-screen tutor<br>"Place this resistor. Measure here. Press when done. Expected: 3&ndash;5 mA. Measured: 3.9 mA. Continue."</div>
+</div>
+<div class="figure-caption">Figure 5. Software architecture for the tutor and lesson packs. (Unchanged from v1.2.)</div>
+
+<h3>Lesson schema</h3>
+<p>Unchanged from v1.2 &mdash; extended with safety and measurement-precision fields so assumptions are data, not prose, and with a structural power-off-before-rewiring behavior:</p>
+<div class="schema-block">id: L2_led_with_resistor
+title: "LED with resistor"
+supply_rail: 3v3
+steps:
+  - prompt: "Place a 330 ohm resistor from row A10 to A15."
+    wait_for: knob_press
+    requires_power_off_before_step: true
+  - prompt: "Place the LED long leg at A15, short leg to the ground rail."
+    wait_for: knob_press
+    requires_power_off_before_step: true
+  - prompt: "Turn power on."
+    measurement_source: ina219
+    expected_units: mA
+    expected_range: [3, 5]
+    warning_threshold: 6
+    hard_fault_threshold: 25
+    max_safe_current_mA: 25
+    gpio_safe: true
+    requires_supervision: false
+    on_pass: { advance: true, message: "Correct. Press to continue." }
+    on_fail:
+      open_circuit: "No current detected. Check the ground rail connection."
+      over_range: "Current is higher than expected. Check resistor value and LED polarity."
+hints:
+  - "LED current is set mostly by the resistor, not the LED."
+  - "Red or yellow LEDs work best at 3.3V; blue/green/white need more headroom."
+next: L3_change_the_resistor</div>
+<p>Any step with <code>requires_power_off_before_step: true</code> makes the engine render a standard interstitial &mdash; "Disconnect power before changing this wiring. Press when power is disconnected." &mdash; before the step prompt. <code>measurement_source</code> distinguishes a human-read value (<code>user_meter</code>, <code>usb_meter</code>) from a software-read one (<code>ina219</code>, <code>gpio_adc</code>). <code>warning_threshold</code> / <code>hard_fault_threshold</code> / <code>max_safe_current_mA</code> separate "this looks off" from "this is dangerous" from "this lesson's safe ceiling," and are what L10's controlled fault drill manipulates without ever exceeding the circuit's real safe operating current.</p>
+
+<h3>Developer mode</h3>
+<p>Connect the Elecrow to a Mac or PC with a USB-C data cable. Use PlatformIO first if possible, or Arduino IDE if following Elecrow examples. Upload firmware over USB-C. The Kit 1 Part 2 audio module is developed the same way, as a second, independent Arduino/PlatformIO project.</p>
+
+<h3>User mode</h3>
+<p>Later, the device should update over Wi-Fi. A user would choose a lesson pack from a menu and the device would download content. This is not Kit 1 work.</p>
+
+<h3>Storage plan</h3>
+<p>Do not buy a microSD card yet. The Elecrow listing specifies 16M flash, UART, I2C, and FPC expansion, but does not advertise a microSD slot. The v1 plan:</p>
+<ul>
+  <li>Firmware uploaded over USB-C during development.</li>
+  <li>Lesson content (the schema above) compiled into firmware or stored in internal flash using LittleFS or an equivalent ESP32 filesystem.</li>
+  <li>Wi-Fi content updates deferred until the lesson engine is stable.</li>
+  <li>External SD only if hardware inspection confirms a usable slot, or if an SPI SD module is added later.</li>
+</ul>
+
+<h3>Avoid excessive flash writes</h3>
+<p>Live measurements (voltage/current readings during an active lesson) stay in RAM. Only lesson completion, fault summaries, and calibration records get persisted to flash. High-frequency writes of live sensor data would shorten flash life for no benefit.</p>
+
+<h3>Lesson engine</h3>
+<p>The correct architecture is a small lesson engine, not custom firmware per lesson. The engine knows how to display a step, draw a wiring diagram, wait for a knob press, ask a question, read the current sensor, compare expected values against the schema above, and advance.</p>
+
+<h2>8. Smart Power Module path</h2>
+
+<h3>V0: Visible power</h3>
+<p>Use the Plugable USB-C meter. The learner reads voltage, current, and watts manually. Sufficient for Ohm's law lessons.</p>
+<div class="callout blue">
+<b class="label">Measurement scope caveat:</b> the Plugable meter measures the USB-C power path, not necessarily the exact branch current of a breadboard circuit. The meter is excellent for visible V/A/W intuition; the INA219 is the correct path for software-readable, circuit-specific measurement.
+</div>
+
+<h3>V1: Software-observed power</h3>
+<p>Wire the INA219 in series with the breadboard load, connected to the Elecrow via I2C, following the topology in Figure 3 (&sect;5). The lesson engine reads current and voltage directly.</p>
+<div class="callout red">
+  <b class="label">V1 fault behavior:</b> on over-current or out-of-range read, the lesson engine (1) shows a full-screen red fault banner, (2) displays the explicit instruction "Disconnect power now," and (3) logs the fault event (timestamp and reading, persisted). There is no automatic cutoff at V1 &mdash; the learner is the disconnect mechanism. L10 (&sect;11) gives the learner deliberate, supervised practice with this exact banner before they can encounter it by accident.
+</div>
+
+<h3>V2: Protected smart module</h3>
+<p>Design a custom board with USB-C input, current limiting, measurement, fault reporting, and a safe disconnect circuit. This becomes the commercial product core, and is the first version where "warn" can become "warn and cut."</p>
+
+<h3>V3: Row-aware smart breadboard</h3>
+<p>Only after the power module works, explore sensing rows or continuity. This is much harder and should not be the first product.</p>
+
+<h2>9. Kit 1 desk layout</h2>
+<div class="diagram">
+  <div class="node blue">Elecrow rotary display<br>front-panel tutor<br>not inserted into breadboard</div>
+  <span class="arrow-label">jumpers</span>
+  <div class="node gray" style="min-width:2.2in;">BusBoard BB830<br>standard solderless breadboard<br>experiments happen here</div>
+  <div class="node gray">Parts box<br>R / LED / C / SW / POT</div>
+</div>
+<div class="diagram">
+  <div class="node blue">Plugable USB-C meter<br>inline at power input</div>
+  <div class="node blue">Treedix USB-C power module<br>5V / 3.3V rails</div>
+  <span class="arrow-label">sense path</span>
+  <div class="node yellow">INA219 sensor<br>reads current and voltage<br>I2C to Elecrow, common ground</div>
+</div>
+<div class="diagram">
+  <div class="node green">ESP32-S3 audio module + MAX98357A + speaker<br>added for Part 2; UART to Elecrow</div>
+</div>
+<div class="figure-caption">Figure 6. Recommended Kit 1 desk layout (audio module row is new in v1.3).</div>
+
+<h2>10. Safety scope</h2>
+<ul>
+  <li>Kit 1 is low-voltage DC only: 3.3V (default) and 5V (isolated experiments only) breadboard circuits.</li>
+  <li>No AC mains. No wall outlet experiments. No exposed lithium battery charging experiments.</li>
+  <li><b>The Elecrow / ESP32-S3 GPIO and I2C pins are 3.3V logic. Never connect 5V directly to a GPIO, I2C, UART, touch, display, or expansion pin unless the documentation explicitly states 5V tolerance.</b> This applies equally to the Part 2 audio module's UART link.</li>
+  <li>Assume beginner mistakes. Use current limiting, start with higher resistor values, and disconnect power before rewiring &mdash; practiced directly in L1 and enforced structurally via <code>requires_power_off_before_step</code> (&sect;7).</li>
+  <li>The smart module should detect over-current and shut off or warn before damage occurs. At V1, the off-the-shelf module can only warn (&sect;8); L10 gives the learner practiced, supervised exposure to that warning before it can happen unsupervised.</li>
+  <li>The audio module and the Elecrow must share a common ground if linked by UART or I2C; the speaker/amp side carries no GPIO-safety concerns of its own since it never touches Elecrow pins directly.</li>
+</ul>
+
+<h3>Current limits for early lessons</h3>
+<table>
+<tr><th>Lesson</th><th>Target current</th><th>Note</th></tr>
+<tr><td>L2: LED with resistor</td><td>&lt; 5 mA at 3.3V</td><td>Red/yellow LED, 330&Omega;&ndash;1k resistor.</td></tr>
+<tr><td>L3: Resistor comparison</td><td>&lt; 10 mA</td><td>1k / 470&Omega; / 330&Omega; at 3.3V, worst case.</td></tr>
+<tr><td>L4/L5: Series &amp; parallel</td><td>&lt; 20 mA total</td><td>Sum across all branches.</td></tr>
+<tr><td>L8: GPIO-driven LED</td><td>well under GPIO abs. max</td><td>Size the resistor conservatively (target &lt;10 mA) regardless.</td></tr>
+<tr><td>L11: Buzzer/transistor</td><td>transistor-switched only</td><td>Do not drive a buzzer directly from a GPIO pin unless its current draw is verified GPIO-safe.</td></tr>
+</table>
+
+<h2>11. Kit 1 lesson sequence <span class="rev-tag">EXTENDED, L12&ndash;L13 NEW</span></h2>
+
+<p><b>L0: First boot validation</b> &mdash; before any breadboard wiring: load a vendor example over USB-C and confirm, in order: display output, capacitive touch response, knob rotation, knob press, and a successful USB-C firmware upload. Record the exact board definition, library versions, and example sketch name used.</p>
+<p><b>L1: Power-off habit</b> &mdash; the screen asks the learner to disconnect power, then walks through placing/removing a single jumper, then reconnect. No measurement yet.</p>
+<p><b>L2: LED with resistor:</b> Build a simple LED circuit at 3.3V with a red or yellow LED. The screen teaches polarity, current limiting, and expected current (target &lt;5 mA).</p>
+<p><b>L3: Change the resistor:</b> Swap 1k, 470&Omega;, and 330&Omega; resistors at 3.3V. The screen asks the learner to predict brightness and current before measuring.</p>
+<p><b>L4: Series resistance:</b> Place two resistors in series and measure lower current.</p>
+<p><b>L5: Parallel branches:</b> Build two LED branches and observe total current increase.</p>
+<p><b>L6: Button input:</b> Wire a pushbutton and pull-down resistor. The display changes when the button is pressed.</p>
+<p><b>L7: Potentiometer:</b> Use a 10K pot as a voltage divider. Turn the pot and watch analog voltage change.</p>
+<p><b>L8: Software-controlled LED:</b> Use the Elecrow to drive an LED through a resistor. Then map knob position to brightness.</p>
+<p><b>L9: Smart measurement:</b> Insert the INA219 into the load path (Figure 3). The display compares expected and measured current.</p>
+<p><b>L10: Controlled fault-screen drill</b> &mdash; uses the same safe circuit already on the board, well within the current-limit table. The lesson temporarily lowers its own thresholds far below the circuit's actual safe current, so the existing, unmodified, safe current trips the red fault banner. No real over-current is ever created.</p>
+<p><b>L11: Transistor switch:</b> Use a transistor to drive a buzzer or higher-current LED path from a GPIO pin.</p>
+<p><b>L12: Audio module bring-up</b> <span class="new-tag">NEW</span> &mdash; wire the second ESP32-S3 + MAX98357A + speaker on the breadboard, flash a minimal Arduino sketch, and confirm a test tone plays. This is purely a hardware/firmware checkpoint &mdash; no Wi-Fi yet.</p>
+<p><b>L13: Internet-radio capstone</b> <span class="new-tag">NEW</span> &mdash; connect the audio module to Wi-Fi, fetch a small JSON station list (folding in v1.1/v1.2's old "Stage 2a" Wi-Fi/API teaching), select a saved favorite using the Elecrow knob, and send <code>play_station</code> over the UART link. Success is audio from the speaker. This is the Kit 1 finale.</p>
+
+<h2>12. Example on-screen lesson flow</h2>
+<ol>
+  <li>Screen: Find a 330&Omega; resistor and a red or yellow LED. Press the knob when found.</li>
+  <li>Screen: Place one end at row A10 and the other at row A15.</li>
+  <li>Screen: Place LED long leg at A15 and short leg to the ground rail.</li>
+  <li>Screen: Disconnect power before connecting the 3.3V rail through the resistor path.</li>
+  <li>Screen: Turn power on. Expected current is about 3 to 5 mA at 3.3V with a red or yellow LED.</li>
+  <li>Screen, V0: Read the Plugable meter and enter or select the closest current.</li>
+  <li>Screen, V1: Sensor reads 3.9 mA. Correct. Press to continue.</li>
+  <li>Screen: Replace the 330&Omega; resistor with 1k. Predict whether the LED gets brighter or dimmer.</li>
+</ol>
+
+<h2>13. Kit 2: Advanced SDR / Waterfall Add-On <span class="new-tag">NEW</span></h2>
+<p>Kit 2 is an advanced add-on for users who completed Kit 1, or who already own equivalent components. It carries no beginner electronics curriculum &mdash; it is an expansion, not a lesson pack.</p>
+
+<h3>Researched compute options</h3>
+<table>
+<tr><th>Option</th><th>Approx. cost (2026)</th><th>Strength</th><th>Tradeoff</th></tr>
+<tr><td>Raspberry Pi 4</td><td>Lower of the two Pi options</td><td>Proven for a dedicated single-purpose receiver; huge existing RTL-SDR tutorial base</td><td>Less headroom for multiple dongles or heavier processing</td></tr>
+<tr><td><b>Raspberry Pi 5</b></td><td>$130&ndash;205 all-in depending on RAM/storage, due to 2026 DRAM price hikes</td><td>Faster CPU and USB; better fit if the station grows (more dongles, OpenWebRX, NVMe)</td><td>2026 pricing has risen sharply; no longer a clear price win over a mini PC</td></tr>
+<tr><td>x86 mini PC (e.g. Beelink/GMKtec N100/N150 class)</td><td>$170&ndash;270</td><td>Broad x86 Linux driver/software coverage &mdash; fewer "no ARM build exists" dead ends for SDR tools</td><td>Less aligned with the maker/tutorial ecosystem the rest of this project lives in</td></tr>
+</table>
+<p>This stays an open call (&sect;1, &sect;4) rather than a hard default: <b>Raspberry Pi 5 is the recommended starting point</b> for ecosystem and documentation fit with the rest of this project, with Pi 4 as a cheaper option for a single-purpose receiver and a mini PC as the fallback if Pi pricing or availability is bad at purchase time.</p>
+
+<h3>Researched receiver and software</h3>
+<p><b>RTL-SDR Blog V4</b> is the recommended receiver: it replaced the older R820T2 tuner with an R828D tuner plus an internal triplexer, giving native HF reception (500 kHz&ndash;1.766 GHz continuous) without an upconverter, and better filtering against FM-broadcast overload than the V3. It is the current default community answer for "what SDR should I buy," at roughly $35&ndash;40.</p>
+<p><b>SDR++</b> is the recommended first-success waterfall software: it is modern, cross-platform, and runs well on both Pi 4 and Pi 5 with a lighter resource footprint than GQRX. GQRX remains a documented fallback for users who prefer its simpler, more minimal Linux-native interface.</p>
+
+<h3>Architecture</h3>
+<div class="diagram">
+  <div class="node blue">Elecrow rotary display<br>control head (same unit as Kit 1)</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node gray">USB-serial<br>JSON-per-line</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node purple">Raspberry Pi 5 / mini PC<br>SDR++ + RTL-SDR Blog V4</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node green">User's own monitor<br>waterfall / spectrum display</div>
+</div>
+<div class="figure-caption">Figure 7. Kit 2 architecture &mdash; an add-on to the Kit 1 Elecrow, not a replacement for it.</div>
+
+<h3>What Kit 2 assumes from Kit 1, and what it adds</h3>
+<ul>
+  <li><b>Assumes:</b> the Elecrow unit itself, and that its firmware already emits knob/touch/button events as JSON-per-line over USB-serial (true from Kit 1 Part 1 onward, &sect;6).</li>
+  <li><b>Adds:</b> compute (Pi/mini PC), the RTL-SDR receiver, an antenna starter set, USB cables, storage, a power supply, and the SDR++ software stack. The monitor is user-supplied.</li>
+</ul>
+
+<h3>Command protocol, generalized further</h3>
+<div class="schema-block">{"command":"set_frequency","hz":145500000}
+{"command":"set_screen","mode":"sdr","frequency_hz":145500000}
+{"status_request":"sdr"}</div>
+
+<h2>14. Kit 3: SDR Workstation with included 15&Prime; display <span class="new-tag">NEW</span></h2>
+<p>Kit 3 is functionally Kit 2 plus a display: the same SDR/waterfall capability, packaged as a more complete, appliance-like product for users without a spare monitor. Higher cost, higher support burden &mdash; this is the premium tier of the ladder, not a different technical path.</p>
+
+<h3>Researched display options</h3>
+<table>
+<tr><th>Option</th><th>Approx. cost</th><th>Notes</th></tr>
+<tr><td><b>Official Raspberry Pi Monitor</b></td><td>~$100</td><td>15.6&Prime; Full HD IPS, standard HDMI in, USB-powered from the Pi itself. Best documentation/support fit if Kit 2 compute is a Pi.</td></tr>
+<tr><td>Budget USB-C/HDMI portable monitor (Arzopa-class)</td><td>~$70</td><td>15.6&Prime; 1080p, dual USB-C (one supports DisplayPort Alt-Mode) plus mini-HDMI. Works with either a Pi or an x86 mini PC, so it's the right fallback if compute is a mini PC.</td></tr>
+</table>
+<p><b>Recommendation:</b> the official Raspberry Pi Monitor if Kit 2's compute choice lands on a Pi; an Arzopa-class budget portable monitor if it lands on a mini PC, since the official Pi monitor is purpose-built around Pi power/mounting conventions. Touch is not recommended for v1 &mdash; the Elecrow already provides the physical control surface, and adding touch to the 15&Prime; display would duplicate that without a clear benefit.</p>
+
+<h3>Architecture</h3>
+<div class="diagram">
+  <div class="node blue">Elecrow rotary display<br>control head (same unit as Kit 1/2)</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node gray">USB-serial<br>JSON-per-line</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node purple">Raspberry Pi 5 / mini PC<br>SDR++ + RTL-SDR Blog V4</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node green">Included 15&Prime; display<br>waterfall / spectrum display</div>
+</div>
+<div class="figure-caption">Figure 8. Kit 3 architecture &mdash; identical to Kit 2 except the display is bundled, not user-supplied.</div>
+
+<h2>15. Bill of materials, by kit and timing <span class="rev-tag">RESTRUCTURED</span></h2>
+<p>Durable specs live in the Interface/Spec column; ASINs and links are sourcing references only (&sect;18), since listings rot. Items without a confirmed ASIN are described by spec; search by name/part number.</p>
+
+<h3>Kit 1 Standard &mdash; Buy Now</h3>
+<table>
+<tr><th>#</th><th>Item</th><th>Interface / Spec</th><th>Rationale</th></tr>
+<tr class="cat-row"><td>1</td><td>ELECROW ESP32 Rotary Display, 2.1" 480x480 IPS round (already bought)</td><td class="small">ESP32-S3, Wi-Fi/BLE, UART, I2C, FPC expansion, 16M flash, 8M PSRAM, 5V/1A input, 3.3V logic on GPIO/I2C</td><td class="small">Front-panel tutor and control head for all three kits.</td></tr>
+<tr class="cat-row"><td>2</td><td>BusBoard BB830 solderless breadboard</td><td class="small">830 tie points, 4 power rails, 36V/2A rating, 21&ndash;26 AWG</td><td class="small">Premium standard breadboard, correct size for lessons.</td></tr>
+<tr class="cat-row"><td>3</td><td>Treedix USB-C breadboard power module</td><td class="small">USB-C in, 3.3V/5V regulated rail out</td><td class="small">3.3V rail is the default for Elecrow-adjacent lessons.</td></tr>
+<tr class="cat-row"><td>4</td><td>Plugable USB-C Power Meter Tester</td><td class="small">Inline pass-through, OLED V/A/W readout</td><td class="small">Visible Ohm's law (V0). Measures the USB-C input path, not branch current.</td></tr>
+<tr class="cat-row"><td>5</td><td>Adafruit INA219 current sensor, STEMMA QT</td><td class="small">High-side DC, 26V target, &plusmn;3.2A, I2C</td><td class="small">Smart feedback module (V1). Must sit in series with the load.</td></tr>
+<tr class="cat-row"><td>6</td><td>Qwiic/STEMMA QT cable kit</td><td class="small">JST-SH 4-pin to breadboard pins</td><td class="small">Confirm Elecrow's own connector before assuming Qwiic-compatible (&sect;4).</td></tr>
+<tr class="cat-row"><td>7</td><td>Silicone flexible Dupont jumper wires</td><td class="small">M-M, M-F, F-F</td><td class="small">Far less stiff than standard kit wires.</td></tr>
+<tr class="cat-row"><td>8</td><td>Aniann 1% metal film resistor assortment</td><td class="small">1280 pcs, broad E-series coverage</td><td class="small">Needed for every lesson.</td></tr>
+<tr class="cat-row"><td>9</td><td>BOJACK 5mm LED assortment</td><td class="small">5 colors</td><td class="small">Default lessons use red/yellow at 3.3V.</td></tr>
+<tr class="cat-row"><td>10</td><td>BOJACK tactile pushbutton assortment</td><td class="small">10 values</td><td class="small">Input lessons.</td></tr>
+<tr class="cat-row"><td>11</td><td>MCIGICM 10K breadboard trim pots</td><td class="small">10 pcs, 10K&Omega;</td><td class="small">Voltage dividers, analog input.</td></tr>
+<tr class="cat-row"><td>12</td><td>PLUSIVO BJT transistor assortment</td><td class="small">NPN and PNP</td><td class="small">L11 transistor switching.</td></tr>
+<tr class="cat-row"><td>13</td><td>Umirokin clear organizer boxes</td><td class="small">2 pack, adjustable dividers</td><td class="small">Keeps parts from becoming a loose bag.</td></tr>
+</table>
+
+<h3>Kit 1 &mdash; Buy Later, General <span class="new-tag">NEW</span></h3>
+<p class="figure-caption" style="margin-top:-4px;">Not radio-specific. Carried forward from v1.2's "buy soon" rows so a complete Kit 1 box still includes them, and so L11's buzzer has a matching BOM line.</p>
+<table>
+<tr><th>#</th><th>Item</th><th>Interface / Spec</th><th>Rationale</th></tr>
+<tr class="cat-row"><td>14</td><td>EMGTMS ceramic capacitor kit</td><td class="small">24 values, 480 pcs, 10pF&ndash;10&micro;F</td><td class="small">RC timing, signal smoothing. Not needed for the first lessons.</td></tr>
+<tr class="cat-row"><td>15</td><td>Hilitchi electrolytic capacitor assortment</td><td class="small">300 pcs</td><td class="small">Power smoothing for later lessons.</td></tr>
+<tr class="cat-row"><td>16</td><td>Passive/active buzzer module pack</td><td class="small">Arduino/ESP32 compatible</td><td class="small">L11 (&sect;11) drives this through a transistor, not directly from a GPIO pin, unless the module's current draw is verified GPIO-safe.</td></tr>
+</table>
+
+<h3>Kit 1 Deluxe &mdash; Buy Later, for the Radio Capstone</h3>
+<table>
+<tr><th>#</th><th>Item</th><th>Interface / Spec</th><th>Rationale</th></tr>
+<tr class="cat-row"><td>17</td><td>ESP32-S3 dev board (second board, audio-dedicated)</td><td class="small">ESP32-S3, USB-C, Arduino/PlatformIO compatible</td><td class="small">Runs the radio firmware independently of the Elecrow.</td></tr>
+<tr class="cat-row"><td>18</td><td>MAX98357A I2S amplifier breakout</td><td class="small">I2S in (BCLK/LRC/DIN, no MCLK), 3W class-D out, 4&ndash;8&Omega; load</td><td class="small">Recommended audio path &mdash; see &sect;6.</td></tr>
+<tr class="cat-row"><td>19</td><td>Small 4&ndash;8&Omega; speaker, 3W class</td><td class="small">Matched to MAX98357A output</td><td class="small">The actual sound source for the capstone.</td></tr>
+<tr class="cat-row"><td>20</td><td>Additional jumper wires / small enclosure (optional)</td><td class="small">&mdash;</td><td class="small">UART link to Elecrow; speaker box is optional polish, not required for the capstone to work.</td></tr>
+</table>
+
+<h3>Kit 2 &mdash; Advanced SDR Add-On</h3>
+<table>
+<tr><th>#</th><th>Item</th><th>Interface / Spec</th><th>Rationale</th></tr>
+<tr class="cat-row"><td>21</td><td>Raspberry Pi 5 (or Pi 4, or x86 mini PC)</td><td class="small">See &sect;13 comparison &mdash; open call at purchase time</td><td class="small">Heavy compute for FFT/waterfall.</td></tr>
+<tr class="cat-row"><td>22</td><td>RTL-SDR Blog V4 receiver</td><td class="small">500 kHz&ndash;1.766 GHz, native HF, R828D tuner</td><td class="small">Recommended receiver &mdash; see &sect;13.</td></tr>
+<tr class="cat-row"><td>23</td><td>Antenna starter set</td><td class="small">Telescopic/dipole, SDR-dongle compatible</td><td class="small">Minimum viable reception out of the box.</td></tr>
+<tr class="cat-row"><td>24</td><td>USB cables, storage (microSD or SSD), power supply</td><td class="small">Matched to compute choice (&sect;13)</td><td class="small">Standard Pi/mini-PC accessories.</td></tr>
+</table>
+
+<h3>Kit 3 &mdash; SDR Workstation (adds to Kit 2)</h3>
+<table>
+<tr><th>#</th><th>Item</th><th>Interface / Spec</th><th>Rationale</th></tr>
+<tr class="cat-row"><td>25</td><td>15&Prime; display (official Raspberry Pi Monitor or budget USB-C/HDMI alternative)</td><td class="small">HDMI in, USB-powered; see &sect;14 comparison</td><td class="small">Bundled screen for an all-in-one workstation.</td></tr>
+<tr class="cat-row"><td>26</td><td>Display power cable, HDMI cable, stand/mount</td><td class="small">Matched to display choice</td><td class="small">Completes the bundled-display assembly.</td></tr>
+</table>
+
+<h2>16. Product concept</h2>
+<h3>What is distinctive</h3>
+<p>Most electronics kits give instructions. This system gives feedback: it teaches, observes, and reacts. The device does not merely say what to build. It observes voltage and current and tells the learner what likely happened &mdash; and that same teach/observe/react loop is what makes Kit 1's radio capstone land as a "wow" moment rather than a generic feature checkbox: the learner spent Kit 1 Part 1 quietly wiring and being corrected, and the payoff is that the thing they built makes sound.</p>
+
+<h3>Why this can be a product</h3>
+<p>The first product does not require a proprietary breadboard, an SDR receiver, or a 15&Prime; screen (&sect;2). The first sellable unit is a smart USB-C power and measurement module, plus an ESP32 display tutor, plus a standard BB830 &mdash; Kit 1, Part 1, full stop. Kit 1 Part 2, Kit 2, and Kit 3 are upsells to a working core, not prerequisites for it.</p>
+
+<div class="callout green">
+<b class="label">Product realism note:</b> the likely first sellable product is not a smart breadboard, an SDR kit, or a workstation. It is a smart USB-C power and measurement module, paired with a standard BB830, paired with an ESP32 display tutor, with lessons as structured content packs (&sect;7's schema). Kit 1 Part 2's radio capstone is the first upsell; Kit 2 and Kit 3 are further upsells for a smaller, more advanced segment of that same customer base.
+</div>
+
+<h3>Course packs</h3>
+<p>The same hardware could support course packs: Electronics Fundamentals, Internet Radio, Amateur Radio, SDR Basics, Sensors, Home Automation, and Robotics. With the lesson schema in &sect;7, each course pack is a set of schema files plus assets, not a firmware fork. Internet Radio is now Kit 1's own course pack rather than a Stage 2 appliance feature; SDR Basics becomes Kit 2/3's course pack.</p>
+
+<h3>Commercial risk</h3>
+<p>The difficult parts are not the first hardware. The hard work is curriculum design, safe fault handling, reliable connectoring, and making lessons resilient when beginners miswire circuits. The lesson schema and the V1 fault behavior (&sect;7&ndash;8) are concrete artifacts against that risk, not just statements of it.</p>
+
+<h2>17. Next build action after parts arrive</h2>
+<ol>
+  <li><b>Photograph and identify the Elecrow connector set</b> that arrives in the box. Confirm 3.3V, GND, SDA, and SCL pins before connecting the INA219. Add an adapter cable to the BOM if no clean Qwiic/STEMMA-native connector is included (&sect;4).</li>
+  <li><b>Run L0's first-boot validation</b> (&sect;11): load a basic Elecrow example over USB-C, confirm display, touch, knob rotation, knob press, and USB-C upload. Record the board definition, library versions, and example sketch name.</li>
+  <li>Assemble the BB830 rails with the Treedix power module. Verify 5V and 3.3V with the multimeter before connecting the Elecrow.</li>
+  <li>Build the first LED/resistor lesson (L2) manually using the USB-C meter for visible feedback, at 3.3V with a red or yellow LED.</li>
+  <li>Add the INA219 and make the Elecrow display current and voltage, following the topology in Figure 3. That is the first true Smart Lab milestone.</li>
+  <li><b>Source and breadboard the ESP32-S3 + MAX98357A audio module</b> <span class="new-tag">NEW</span> and confirm a test tone plays (L12) before attempting the full internet-radio capstone (L13).</li>
+  <li><b>Confirm the UART wiring</b> between the Elecrow and the audio module, and that both share a common ground.</li>
+  <li>Draft the Kit 2/3 control-message schema extensions (&sect;13) as a one-page note once Kit 1 firmware's event handling is stable, so it does not need a rewrite later.</li>
+</ol>
+
+<h2>18. Sourcing references</h2>
+<p>These are retailer listings or canonical product pages, not the spec of record (see the Interface/Spec columns in &sect;15). Prices, stock, and listing details change; if a link goes stale, search by ASIN, part name, or part number.</p>
+<ul>
+  <li><b>Elecrow 2.1" rotary display</b> (ASIN B0G3TZGRC4): rotary knob, capacitive touch, ESP32-S3, Wi-Fi/BLE, UART, I2C, FPC expansion, 16M flash, 8M PSRAM, 5V/1A input. Connector pinout and I2S availability not yet confirmed against the physical board.</li>
+  <li><b>BusBoard BB830</b> (ASIN B0040Z4QN8): 830 tie points, 4 power rails, 6.5 x 2.2 x 0.3 in, 36V/2A rating.</li>
+  <li><b>Treedix USB-C breadboard power module</b> (ASIN B0CN6HYCJD): USB-C charging/power, 3.3V and 5V outputs.</li>
+  <li><b>Plugable USB-C power meter</b> (ASIN B0B5W5NKKN): voltage/amperage measurement, bidirectional connection, data passthrough.</li>
+  <li><b>Adafruit INA219</b> (ASIN B09CBSLXN7): high-side current measurement, 26V target voltage, &plusmn;3.2A range, I2C address options.</li>
+  <li><b>ESP32-S3 dev board + MAX98357A I2S breakout</b> (no single confirmed listing yet): commodity parts from many sellers (e.g. Espressif-licensed ESP32-S3-DevKitC-class boards; MAX98357A breakouts from Adafruit/SparkFun or generic 2-packs). Search by part name &mdash; do not assume a specific ASIN until sourced.</li>
+  <li><b>RTL-SDR Blog V4</b> (rtl-sdr.com store / official RTL-SDR Blog listing): R828D tuner, native HF via internal triplexer, 500 kHz&ndash;1.766 GHz, ~$35&ndash;40.</li>
+  <li><b>Raspberry Pi 5</b> (raspberrypi.com): current pricing inflated by 2026 DRAM costs; compare against mini PC options (e.g. Beelink/GMKtec N100/N150 class) at purchase time.</li>
+  <li><b>Raspberry Pi Monitor, official</b> (raspberrypi.com/products/raspberry-pi-monitor): 15.6&Prime; Full HD IPS, HDMI in, USB-powered. Default Kit 3 display if compute is a Pi.</li>
+  <li><b>Adafruit INA260</b> (official page): higher-capacity future option for a custom V2 Smart Power Module, integrated shunt, I2C, 3V/5V logic compatible, up to 36V/15A.</li>
+</ul>
+
+<h2>19. Future hardware convergence (v2) <span class="new-tag">NEW</span></h2>
+
+<div class="callout purple">
+<b class="label">Not a v1.3 dependency:</b> nothing in this section changes or delays the near-term plan. v1.3 stays off-the-shelf and buildable today &mdash; Elecrow + breadboard for Kit 1 Standard, plus a second ESP32 + MAX98357A + speaker for Kit 1 Deluxe. This section documents a future direction, gated on proving the MVP first. It is not a design task to start now, and it has no BOM line in &sect;15.
+</div>
+
+<p>Kit 1 Deluxe currently splits its functions across two boards: the Elecrow (tutor, control head, knob/touch UI) and a second ESP32 audio module (Wi-Fi streaming, I2S decode, amplification). That split is the right v1 architecture &mdash; cheap, off-the-shelf, and it keeps each board's firmware simple. It is also, by construction, a preview of a single future device.</p>
+
+<h3>Trigger condition</h3>
+<p>Once the MVP is proven &mdash; the lesson engine, the smart measurement loop (INA219 path, &sect;5/&sect;8), and the internet-radio capstone (&sect;6) all working end-to-end on off-the-shelf parts &mdash; it becomes worth designing a custom dial/display module that converges what the Elecrow and the second ESP32 audio module do today into one board.</p>
+
+<h3>What the custom module should include</h3>
+<ul>
+  <li>Rotary control (carried from the Elecrow's knob interaction model).</li>
+  <li>Touchscreen (carried from the Elecrow's capacitive display).</li>
+  <li>A protected expansion connector, so breadboard/sensor wiring mistakes can't easily damage the main board.</li>
+  <li>USB-C power and data, for both charging/power and firmware updates.</li>
+  <li>A built-in smart-measurement interface (the INA219-class current/voltage sensing path, &sect;5/&sect;8), instead of routing it through an external breakout.</li>
+  <li>A clean audio path &mdash; an onboard codec, an integrated I2S amplifier, or at minimum a speaker connector &mdash; so the radio capstone no longer needs a second physical board.</li>
+</ul>
+
+<div class="diagram">
+  <div class="node blue">Elecrow rotary display<br>tutor, control head</div>
+  <div class="node yellow">Second ESP32 audio module<br>streaming, I2S amp, speaker</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node purple">v2: one custom dial/display module<br>rotary + touch + protected expansion + USB-C + smart measurement + audio path</div>
+</div>
+<div class="figure-caption">Figure 9. v2 convergence direction &mdash; two off-the-shelf boards today, one custom module later, only after the MVP is proven.</div>
+
+<p>This is a hardware roadmap entry, not a current build task: no part numbers, no BOM line, and it should not be started before Kit 1 Standard and Kit 1 Deluxe both work reliably with off-the-shelf parts.</p>
+
+<div class="pagebreak"></div>
+
+<h2>20. User paths: Use Mode, Configure Mode, Developer Mode <span class="new-tag">NEW</span></h2>
+<p>The design problem this section answers: the product cannot require the ordinary learner to write code to complete Kit 1 Part 2, Kit 2, or Kit 3. Coding should remain possible, and eventually teachable, but it must not be the default completion path. Without this distinction, the project is an open-source build; with it, the project is a guided learning product.</p>
+
+<div class="callout red">
+<b class="label">Hard requirement:</b> a learner must be able to complete the main milestones of Kit 1, Kit 2, and Kit 3 without writing code. The product may teach what the code is doing, and may offer a later "learn to modify the firmware" branch, but the default user should never need to open PlatformIO, edit C++, debug libraries, or compile firmware manually to reach a kit's milestone.
+</div>
+
+<h3>Path A: Use Mode &mdash; default, no coding</h3>
+<p>The user installs prebuilt firmware through a browser-based installer (&sect;22) and follows guided instructions. No step in either flow below requires writing or compiling code.</p>
+<p><b>Kit 1:</b></p>
+<ol>
+  <li>Plug the Elecrow rotary display into a computer using USB-C.</li>
+  <li>Open the Smart Lab web installer.</li>
+  <li>Click "Install Tutor Firmware."</li>
+  <li>Plug in the second ESP32 audio board (Kit 1 Deluxe only).</li>
+  <li>Click "Install Radio Audio Firmware."</li>
+  <li>Follow the Elecrow screen to configure Wi-Fi, test hardware, build lessons, and play internet-radio audio.</li>
+</ol>
+<p><b>Kit 2 / Kit 3:</b></p>
+<ol>
+  <li>Flash or boot a prepared Raspberry Pi / mini PC image, or run a packaged installer.</li>
+  <li>Plug in the RTL-SDR receiver.</li>
+  <li>Open the preconfigured SDR application.</li>
+  <li>Confirm the waterfall display.</li>
+  <li>Connect the Elecrow control head.</li>
+  <li>Turn the Elecrow knob and confirm a real SDR parameter changes &mdash; frequency, zoom, gain, or preset.</li>
+</ol>
+
+<h3>Path B: Configure Mode &mdash; no coding, editable settings</h3>
+<p>Configure Mode lets the user customize the product without programming it. Configurable items include Wi-Fi credentials, the station list, volume defaults, lesson-pack selection, device name, measurement calibration values, SDR presets, local weather/location settings, the ham repeater database source, and display preferences.</p>
+<p>Configuration runs through one or more of: on-device menus, a local web interface served by the device, a JSON/YAML config file (&sect;25), a browser-based setup page, or serial console commands as a fallback only.</p>
+
+<h3>Path C: Developer Mode &mdash; coding allowed</h3>
+<p>Developer Mode is for Bob, Claude, Codex, maintainers, and open-source contributors. It uses PlatformIO, the Arduino framework for ESP32 first, the GitHub repository, serial logs, the unit-testable lesson schema files, firmware builds, and release binaries &mdash; with ESP-IDF only if later needed. Developer Mode is documented (&sect;21, &sect;23), but it is never required to complete a user-facing kit milestone.</p>
+
+<h2>21. Firmware delivery architecture <span class="new-tag">NEW</span></h2>
+<p>The product ships prebuilt firmware images so Use Mode (&sect;20) never requires a build step.</p>
+
+<h3>Firmware Image 1: Elecrow Tutor Firmware</h3>
+<ul>
+  <li>Display lesson steps, diagrams, and simple UI.</li>
+  <li>Read knob rotation, knob press, and touch input.</li>
+  <li>Read the INA219 over I2C and compare measured voltage/current against lesson expectations.</li>
+  <li>Display pass / fail / warning states.</li>
+  <li>Manage lesson progress.</li>
+  <li>Send command messages to the ESP32 audio board (&sect;6) and, later, to the Raspberry Pi/SDR workstation (&sect;13).</li>
+  <li>Support Wi-Fi setup, configuration import/export, and version reporting.</li>
+</ul>
+
+<h3>Firmware Image 2: ESP32 Audio Firmware</h3>
+<ul>
+  <li>Connect to Wi-Fi.</li>
+  <li>Store or receive station URLs.</li>
+  <li>Receive commands from the Elecrow.</li>
+  <li>Stream internet radio and decode supported audio formats.</li>
+  <li>Output audio over I2S, driving the MAX98357A or equivalent I2S amplifier (&sect;6).</li>
+  <li>Report status back to the Elecrow, including human-readable errors.</li>
+</ul>
+<p>Expected commands and status replies, extending the protocol already introduced in &sect;6:</p>
+<div class="schema-block">{"command":"play_station","id":"station_001"}
+{"command":"stop"}
+{"command":"set_volume","value":42}
+{"command":"next_station"}
+{"command":"previous_station"}
+{"status_request":"audio"}</div>
+<div class="schema-block">{"status":"playing","station":"station_001","buffer_percent":73}
+{"status":"stopped"}
+{"status":"error","code":"wifi_failed","message":"Wi-Fi connection failed"}
+{"status":"error","code":"stream_failed","message":"Could not open stream"}</div>
+
+<h3>Firmware Image 3: SDR Bridge / Control Head Firmware <span class="rev-tag">LATER</span></h3>
+<p>This is additional modes enabled in the same Elecrow tutor firmware (Image 1), not a separate codebase &mdash; Kit 2/3 reuse the same physical Elecrow unit purchased with Kit 1 (&sect;13).</p>
+<ul>
+  <li>Send knob/touch/button events to the Raspberry Pi or mini PC.</li>
+  <li>Receive screen-state information from the SDR workstation if needed.</li>
+  <li>Display compact SDR status on the Elecrow.</li>
+  <li>Select presets; change frequency, waterfall zoom, and gain; toggle modes.</li>
+</ul>
+<div class="schema-block">{"event":"knob","delta":1}
+{"event":"button","name":"select","state":"pressed"}
+{"event":"touch","x":214,"y":93}
+{"command":"set_frequency","hz":145500000}
+{"command":"set_gain","db":22}
+{"command":"set_waterfall_zoom","delta":1}
+{"status_request":"sdr"}</div>
+
+<h2>22. Browser-based flashing <span class="new-tag">NEW</span></h2>
+<p>The preferred no-code flashing path is a web installer &mdash; a tool in the ESP Web Tools / ESP Launchpad class. Arduino IDE and PlatformIO are not required for Use Mode.</p>
+<p>Implementation requirements:</p>
+<ul>
+  <li>Host the firmware binaries and a manifest/configuration file.</li>
+  <li>One install button per supported board.</li>
+  <li>Clear board-compatibility display.</li>
+  <li>A "known good firmware" fallback build.</li>
+  <li>Version numbers and release notes on every build.</li>
+  <li>A documented recovery procedure.</li>
+  <li>A serial log viewer or simple diagnostic mode, if the chosen web flasher supports it.</li>
+</ul>
+<div class="callout blue">
+<b class="label">Platform caveat:</b> browser-based ESP flashing requires a desktop browser with Web Serial support. iPhone/iPad should not be assumed to work for flashing. Mobile devices are fine for reading instructions, but are not the primary firmware installer.
+</div>
+
+<h2>23. Repository and release structure <span class="new-tag">NEW</span></h2>
+<p>Proposed GitHub layout, separating firmware, protocol, lesson content, installers, docs, and hardware so Developer Mode (&sect;20) work stays organized without leaking into the Use Mode experience:</p>
+<div class="schema-block">smart-electronics-lab/
+  firmware/
+    elecrow-tutor/        platformio.ini, src/, include/, data/, lessons/
+    esp32-audio/          platformio.ini, src/, include/
+  shared-protocol/
+    protocol.md
+    schema/
+  lesson-packs/
+    electronics-fundamentals/   L-1_power_off.yaml, L0_hello_lab.yaml, L1_led_resistor.yaml, assets/
+    internet-radio/             R1_audio_board_test.yaml, R2_first_station.yaml, assets/
+  installers/
+    web/                  index.html, manifests/, firmware/
+    pi-image/             build-notes.md, install-scripts/, first-boot/
+  docs/
+    product-design/  user-guide/  developer-guide/  troubleshooting/
+  hardware/
+    bom/  wiring-diagrams/  enclosure-notes/</div>
+<p>Release artifacts: merged Elecrow tutor firmware binary, merged ESP32 audio firmware binary, the web installer manifest, release notes, SHA checksums, compatibility notes, known issues, and recovery instructions.</p>
+
+<h2>24. First-time user flow <span class="new-tag">NEW</span></h2>
+<p>Written as product behavior, not implementation detail.</p>
+
+<h3>Kit 1, Part 1 (Standard): first boot</h3>
+<ol>
+  <li>User plugs in the Elecrow.</li>
+  <li>The browser installer flashes Tutor Firmware.</li>
+  <li>The Elecrow boots to "Welcome to Smart Electronics Lab."</li>
+  <li>The device runs input tests: rotate knob, press knob, touch screen, confirm display.</li>
+  <li>The user connects the INA219 and breadboard power path.</li>
+  <li>The tutor displays a wiring diagram.</li>
+  <li>The user builds the LED/resistor lesson (L2, &sect;11).</li>
+  <li>The tutor reads current.</li>
+  <li>The tutor confirms pass, or diagnoses the likely mistake.</li>
+</ol>
+
+<h3>Kit 1, Part 2 (Deluxe): radio capstone</h3>
+<ol>
+  <li>User plugs in the ESP32 audio board.</li>
+  <li>The browser installer flashes Audio Firmware.</li>
+  <li>The tutor asks the user to connect the audio board to the amplifier/speaker.</li>
+  <li>The tutor sends a test-tone command.</li>
+  <li>The speaker produces a test tone (L12, &sect;11).</li>
+  <li>The user configures Wi-Fi.</li>
+  <li>The user selects the first station.</li>
+  <li>Audio plays.</li>
+  <li>The tutor displays: "You built a networked radio."</li>
+</ol>
+<p>This is the core "wow" moment of Kit 1, consistent with &sect;6 and &sect;16.</p>
+
+<h3>Kit 2 / Kit 3 first boot</h3>
+<ol>
+  <li>User flashes or boots a prepared Pi/mini PC image.</li>
+  <li>User plugs in the RTL-SDR.</li>
+  <li>SDR++ (or the chosen default SDR application) opens with a known first profile.</li>
+  <li>User confirms the waterfall display.</li>
+  <li>User connects the Elecrow.</li>
+  <li>Turning the Elecrow knob changes an SDR parameter.</li>
+  <li>The tutor confirms the control link.</li>
+</ol>
+
+<h2>25. Configuration schema <span class="new-tag">NEW</span></h2>
+<p>A minimal Kit 1 configuration schema, covering everything Configure Mode (&sect;20) needs to expose without coding:</p>
+<div class="schema-block">device:
+  name: "Smart Lab"
+  mode: "kit1"
+wifi:
+  setup_mode: "guided"
+radio:
+  default_volume: 35
+  stations:
+    - id: "station_001"
+      name: "Example Public Radio"
+      url: "https://example-stream-url"
+      format_hint: "mp3"
+lessons:
+  active_pack: "electronics-fundamentals"
+measurement:
+  current_sensor: "ina219"
+  current_calibration_mA: 0
+safety:
+  default_supply_rail: "3v3"
+  gpio_logic_voltage: "3v3"
+  max_beginner_current_mA: 20</div>
+<p>Station URLs and format support must be validated by the audio firmware, which returns human-readable errors (&sect;21) when a stream cannot be opened or decoded &mdash; not a silent failure.</p>
+
+<h2>26. Lesson schema: no-code fields <span class="rev-tag">EXTENDED</span></h2>
+<p>The &sect;7 lesson schema already carries the safety and measurement-precision fields needed for the fault-drill design. For the no-code product flow, the lesson engine also needs each lesson to self-describe its own firmware and hardware requirements, so Use Mode can validate that a lesson is runnable before starting it:</p>
+<ul>
+  <li><code>kit</code>, <code>part</code>, <code>difficulty</code> &mdash; which kit/part this lesson belongs to, and its level.</li>
+  <li><code>requires_firmware</code>, <code>requires_hardware</code> &mdash; minimum firmware version and the hardware parts a lesson needs present.</li>
+  <li><code>requires_supervision</code> &mdash; carried from &sect;7, surfaced explicitly per lesson.</li>
+  <li><code>assets</code>, <code>hints</code>, <code>on_pass</code>, <code>on_fail</code>, <code>next</code> &mdash; content and branching, already used in &sect;7's example.</li>
+</ul>
+<div class="schema-block">id: L1_led_with_resistor
+title: "LED with resistor"
+kit: kit1
+part: quiet_lab
+difficulty: beginner
+requires_firmware: "elecrow-tutor >= 0.1.0"
+requires_hardware: [bb830, usb_c_power_module, ina219, red_led, resistor_1k]
+supply_rail: 3v3
+measurement_source: ina219
+expected_units: mA
+expected_range: [1, 4]
+max_safe_current_mA: 10
+gpio_safe: true
+steps:
+  - prompt: "Disconnect power before wiring."
+    requires_power_off_before_step: true
+    wait_for: knob_press
+  - prompt: "Place the 1k resistor from row A10 to row A15."
+    wait_for: knob_press
+  - prompt: "Place the LED long leg at A15 and short leg to ground."
+    wait_for: knob_press
+  - prompt: "Turn power on."
+    measure: current_mA
+    expected_range: [1, 4]
+    on_fail:
+      open_circuit: "No current detected. Check LED polarity and ground."
+      over_range: "Current is higher than expected. Check resistor value."
+next: L2_change_resistor</div>
+<p>This is a naming/fields convention, not a second schema: it extends the same lesson-schema family already in production use at &sect;7, &sect;11.</p>
+
+<h2>27. Product branch vs. developer branch <span class="new-tag">NEW</span></h2>
+<p>Two branches, two audiences:</p>
+<div class="decisioncols">
+<div class="callout green">
+<b class="label">Product branch</b>
+<ul>
+  <li>Prebuilt firmware.</li>
+  <li>Browser flashing (&sect;22).</li>
+  <li>Guided setup.</li>
+  <li>No local development environment.</li>
+  <li>No required coding.</li>
+</ul>
+</div>
+<div class="callout blue">
+<b class="label">Developer branch</b>
+<ul>
+  <li>PlatformIO / Arduino.</li>
+  <li>Local build and serial debugging.</li>
+  <li>Firmware modification.</li>
+  <li>Custom lesson packs.</li>
+  <li>Protocol extensions.</li>
+</ul>
+</div>
+</div>
+<div class="callout red">
+<b class="label">Hard rule:</b> every required kit milestone must be achievable on the Product branch before it is considered complete. Developer Mode may expose additional learning, but it cannot be the only way to make a kit work.
+</div>
+
+<h2>28. Build plan for Claude/Codex, and the three MVPs <span class="new-tag">NEW</span></h2>
+<p>Claude and Codex are the technical implementers; the build order below produces the Product branch (&sect;27) milestones in the order a learner actually needs them, rather than building outward features first.</p>
+<ol>
+  <li>Create the repository scaffold (&sect;23).</li>
+  <li>Confirm the Elecrow board definition and vendor examples.</li>
+  <li>Build "Hello Lab" Elecrow firmware: display, knob rotation, knob press, touch.</li>
+  <li>Add INA219 readout.</li>
+  <li>Create one hard-coded LED lesson.</li>
+  <li>Convert that lesson to the YAML/structured schema (&sect;26).</li>
+  <li>Build the pass/fail current comparison.</li>
+  <li>Add a web-flashable firmware artifact (&sect;22).</li>
+  <li>Add the ESP32 audio-board proof of concept: Wi-Fi, test tone, stream URL, I2S output to the MAX98357A.</li>
+  <li>Add the Elecrow-to-audio command protocol (&sect;21).</li>
+  <li>Package the first radio-capstone firmware.</li>
+  <li>Only after Kit 1 works, prototype the Kit 2 SDR bridge.</li>
+</ol>
+<div class="mvp-box">
+<b>First MVP:</b> a learner follows the Elecrow screen to build one LED/resistor circuit, the INA219 reads current, and the Elecrow gives a correct pass/fail response. (Same MVP as &sect;2.)
+</div>
+<div class="mvp-box">
+<b>Second MVP:</b> the Elecrow sends a play command to a second ESP32 audio board, and audio comes out of a speaker.
+</div>
+<div class="mvp-box">
+<b>Third MVP:</b> the Elecrow knob changes a parameter in an SDR waterfall application running on a Pi or mini PC.
+</div>
+<p>The first MVP is not the entire product (&sect;2). It is the gate every later milestone builds behind.</p>
+
+<h2>29. Support, recovery, and flash-storage behavior <span class="new-tag">NEW</span></h2>
+<p>Use Mode (&sect;20) must assume some users will miswire hardware, flash the wrong firmware, lose Wi-Fi credentials, or use a power-only USB-C cable. Troubleshooting should be productized, not improvised:</p>
+<ul>
+  <li>Known-good firmware recovery and an "erase and reinstall" path.</li>
+  <li>Serial log access for troubleshooting, where the web flasher supports it (&sect;22).</li>
+  <li>A visible version number on each device.</li>
+  <li>Self-test screens: hardware, audio, INA219, and Wi-Fi.</li>
+  <li>A "safe mode" boot option, if feasible.</li>
+</ul>
+<p>Flash-storage behavior carries forward from &sect;7 unchanged, restated under the no-code framing: live measurements stay in RAM; only lesson completion, summaries, calibration, and settings persist. Lesson data for v1 lives in the internal flash filesystem or is firmware-embedded &mdash; no microSD is assumed for the Elecrow. Browser flashing (&sect;22) is the default firmware update path for early product versions; Wi-Fi lesson-pack download remains future work (&sect;7).</p>
+
+<h2>30. Kit 2 / Kit 3 image strategy <span class="new-tag">NEW</span></h2>
+<p>Extends &sect;13: the no-code user path must use one of a prepared Raspberry Pi image, Raspberry Pi Imager-compatible instructions, a packaged install script, a preconfigured SDR++ profile, or a preinstalled serial bridge service. Kit 2/3 users should not need to compile SDR software.</p>
+<p>The Pi/mini PC image should include: SDR++ (or the chosen SDR application, &sect;13), RTL-SDR support, a default waterfall profile, the serial bridge listener for the Elecrow, sample frequency presets, a first-run wizard, and recovery instructions.</p>
+
+<h2>31. Product identity statement <span class="new-tag">NEW</span></h2>
+<div class="callout">
+Smart Electronics Lab is not a coding kit. It is a guided electronics learning system with an optional developer track. The default learner experience is: install firmware, follow the tutor, build the circuit, observe the measurement, and unlock the next capability. Coding is a later branch, not a prerequisite for success.
+</div>
+
+<div class="footer">Smart Electronics Lab v1.4 &mdash; revised June 2026</div>
+
+</body>
+</html>
