@@ -1,0 +1,25 @@
+# Host-side tests for the Puckie Puck Face project. No ESP32 toolchain
+# needed: the simulator tests, the CI-V codec unit tests, the codec vs
+# simulator integration test, and a syntax check of the firmware against
+# real LVGL headers all run on a plain Ubuntu runner.
+name: puckie-tests
+
+on:
+  push:
+    paths:
+      - "puckie-puck-face/**"
+      - ".github/workflows/puckie-tests.yml"
+  pull_request:
+    paths:
+      - "puckie-puck-face/**"
+      - ".github/workflows/puckie-tests.yml"
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulator, codec, and integration tests
+        run: ./puckie-puck-face/firmware/test/host/run_tests.sh
+      - name: Firmware syntax check vs real LVGL headers
+        run: ./puckie-puck-face/firmware/test/host/check_syntax.sh
